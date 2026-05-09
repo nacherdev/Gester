@@ -1,4 +1,5 @@
 package com.example.gester.dao;
 
-public class Conexion {
+public class Dao {
+
 }
