@@ -44,4 +44,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
     implementation("mysql:mysql-connector-java:8.0.33")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
