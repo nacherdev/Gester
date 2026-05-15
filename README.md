@@ -1,4 +1,4 @@
-# README Proyecto Gester
+# Gester
 Este proyecto es una aplicación Android diseñada para gestionar
 usuarios, servicios y citas mediante una base de datos MySQL remota.
 Implementa una arquitectura robusta utilizando el patrón DAO y una
