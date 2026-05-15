@@ -7,7 +7,8 @@ import java.util.List;
 
 public class DaoTest {
     @Test
-    public void probarConexion() {        Dao dao = new Dao("gester", "admin_gester", "IasenCopysen67");
+    public void probarConexion() {
+        Dao dao = new Dao("dbName", "dbUser", "dbPass");
         List<Cita> lista = dao.historialDeCitas();
 
         System.out.println(lista);
