@@ -59,7 +59,7 @@ public class Dao {
         }
     }
 
-    public ArrayList<Cita> historialDeCitas() {
+    public ArrayList<Cita> todasLasCitas() {
         conectar();
         ArrayList<Cita> listaCitas = new ArrayList<>();
 
@@ -119,7 +119,7 @@ public class Dao {
         String sql = "SELECT * FROM usuarios";
 
         try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
-            while( rs.next() ) {
+            while ( rs.next() ) {
                 listaUsuarios.add(new Usuario(
                         rs.getInt("id"),
                         rs.getString("nombre"),
@@ -139,6 +139,34 @@ public class Dao {
         }
 
         return listaUsuarios;
+    }
+
+    public ArrayList<Servicio> todosLosServicios() {
+        conectar();
+        ArrayList<Servicio> listaServicios = new ArrayList<>();
+
+        String sql = "SELECT * FROM servicios";
+
+        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                listaServicios.add(new Servicio(
+                        rs.getInt("id"),
+                        rs.getString("nombre_servicio"),
+                        rs.getInt("duracion"),
+                        rs.getDouble("precio")
+                ));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return listaServicios;
     }
 
 }
