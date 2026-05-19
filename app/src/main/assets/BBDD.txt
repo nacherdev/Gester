@@ -1,1 +1,1 @@
-NombreBaseDeDatos;UsuarioDB;Contraseña
+NombreDB;UserDB;PassDB
