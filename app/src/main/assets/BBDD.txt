@@ -1,1 +1,1 @@
-NombreDB;UserDB;PassDB
+gester;admin_gester;IasenCopysen67

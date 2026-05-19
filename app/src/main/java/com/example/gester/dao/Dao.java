@@ -4,14 +4,12 @@ import com.example.gester.dao.models.Cita;
 import com.example.gester.dao.models.Servicio;
 import com.example.gester.dao.models.Usuario;
 
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Dao {
 
@@ -21,48 +19,39 @@ public class Dao {
     private String dbPass;
 
     public Dao(String dbName, String dbUser, String dbPass) {
-        this.dbName = dbName;
-        this.dbUser = dbUser;
-        this.dbPass = dbPass;
+        this.dbName = dbName.trim();
+        this.dbUser = dbUser.trim();
+        this.dbPass = dbPass.trim();
     }
 
-    public String getDbName() {
-        return dbName;
-    }
-
-    public void setDbName(String dbName) {
-        this.dbName = dbName;
-    }
-
-    public String getDbUser() {
-        return dbUser;
-    }
-
-    public void setDbUser(String dbUser) {
-        this.dbUser = dbUser;
-    }
-
-    public String getDbPass() {
-        return dbPass;
-    }
-
-    public void setDbPass(String dbPass) {
-        this.dbPass = dbPass;
-    }
+    public String getDbName() { return dbName; }
+    public void setDbName(String dbName) { this.dbName = dbName; }
+    public String getDbUser() { return dbUser; }
+    public void setDbUser(String dbUser) { this.dbUser = dbUser; }
+    public String getDbPass() { return dbPass; }
+    public void setDbPass(String dbPass) { this.dbPass = dbPass; }
 
     public boolean conectar() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://nacherdev.es:3306/" +dbName, dbUser, dbPass);
+            if (con != null && !con.isClosed()) {
+                return true;
+            }
+            Class.forName("com.mysql.jdbc.Driver");
+
+            String url = "jdbc:mysql://nacherdev.es:3306/" + dbName
+                    + "?connectTimeout=5000&socketTimeout=5000&autoReconnect=true";
+
+            con = DriverManager.getConnection(url, dbUser, dbPass);
         } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
             return false;
         }
         return true;
     }
 
     public ArrayList<Cita> todasLasCitas() {
-        conectar();
         ArrayList<Cita> listaCitas = new ArrayList<>();
+        if (!conectar()) return listaCitas;
 
         String sql = "SELECT c.*, " +
                 "u.nombre, u.apellidos, u.DNI, u.fecha_nacimiento, " +
@@ -101,21 +90,20 @@ public class Dao {
                 ));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error en la base de datos: " + e.getMessage());
+            e.printStackTrace();
         } finally {
             try {
-                if (con != null) con.close();
+                if (con != null && !con.isClosed()) con.close();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
         }
-
         return listaCitas;
     }
 
     public ArrayList<Usuario> todosLosUsuarios() {
-        conectar();
         ArrayList<Usuario> listaUsuarios = new ArrayList<>();
+        if (!conectar()) return listaUsuarios;
 
         String sql = "SELECT * FROM usuarios";
 
@@ -130,21 +118,20 @@ public class Dao {
                 ));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         } finally {
             try {
-                con.close();
+                if (con != null && !con.isClosed()) con.close();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
         }
-
         return listaUsuarios;
     }
 
     public ArrayList<Servicio> todosLosServicios() {
-        conectar();
         ArrayList<Servicio> listaServicios = new ArrayList<>();
+        if (!conectar()) return listaServicios;
 
         String sql = "SELECT * FROM servicios";
 
@@ -158,16 +145,14 @@ public class Dao {
                 ));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         } finally {
             try {
-                con.close();
+                if (con != null && !con.isClosed()) con.close();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
         }
-
         return listaServicios;
     }
-
 }
