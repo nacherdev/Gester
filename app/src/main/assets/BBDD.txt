@@ -1,1 +1,0 @@
-NombreBaseDeDatos;UsuarioDB;Contraseña

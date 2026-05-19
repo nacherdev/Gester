@@ -50,13 +50,14 @@ public class Dao {
         this.dbPass = dbPass;
     }
 
-    public void conectar() {
+    public boolean conectar() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://nacherdev.es:3306/" +dbName, dbUser, dbPass);
         } catch (ClassNotFoundException | SQLException e) {
-            throw new RuntimeException(e);
+            return false;
         }
+        return true;
     }
 
     public ArrayList<Cita> todasLasCitas() {
