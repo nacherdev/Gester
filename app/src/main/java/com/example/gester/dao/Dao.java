@@ -4,6 +4,7 @@ import com.example.gester.dao.models.Cita;
 import com.example.gester.dao.models.Servicio;
 import com.example.gester.dao.models.Usuario;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -58,9 +59,9 @@ public class Dao {
         }
     }
 
-    public List<Cita> historialDeCitas() {
+    public ArrayList<Cita> todasLasCitas() {
         conectar();
-        List<Cita> listaCitas = new ArrayList<>();
+        ArrayList<Cita> listaCitas = new ArrayList<>();
 
         String sql = "SELECT c.*, " +
                 "u.nombre, u.apellidos, u.DNI, u.fecha_nacimiento, " +
@@ -109,6 +110,63 @@ public class Dao {
         }
 
         return listaCitas;
+    }
+
+    public ArrayList<Usuario> todosLosUsuarios() {
+        conectar();
+        ArrayList<Usuario> listaUsuarios = new ArrayList<>();
+
+        String sql = "SELECT * FROM usuarios";
+
+        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            while ( rs.next() ) {
+                listaUsuarios.add(new Usuario(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("apellidos"),
+                        rs.getString("DNI"),
+                        rs.getString("fecha_nacimiento")
+                ));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return listaUsuarios;
+    }
+
+    public ArrayList<Servicio> todosLosServicios() {
+        conectar();
+        ArrayList<Servicio> listaServicios = new ArrayList<>();
+
+        String sql = "SELECT * FROM servicios";
+
+        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                listaServicios.add(new Servicio(
+                        rs.getInt("id"),
+                        rs.getString("nombre_servicio"),
+                        rs.getInt("duracion"),
+                        rs.getDouble("precio")
+                ));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return listaServicios;
     }
 
 }
