@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -20,7 +19,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import com.example.gester.R;
+import com.example.gester.controller.Controller;
 
 public class AccesoActivity extends AppCompatActivity {
 
@@ -49,25 +52,64 @@ public class AccesoActivity extends AppCompatActivity {
                         String linea = "";
                         InputStream is = null;
                         BufferedReader br = null;
+
                         try {
                             is = getAssets().open("BBDD.txt");
                             br = new BufferedReader(new InputStreamReader(is));
                             linea = br.readLine();
-                            credenciales = linea.split(";");
+
+                            if (linea != null && !linea.trim().isEmpty()) {
+                                credenciales = linea.trim().split(";");
+                            }
 
                             br.close();
                             is.close();
                         } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            Toast.makeText(AccesoActivity.this, "Error al leer BBDD.txt", Toast.LENGTH_SHORT).show();
+                            return;
                         }
 
-                        Intent intent = new Intent(AccesoActivity.this, HomeActivity.class);
-                        intent.putExtra("nombre", credenciales[0]);
-                        startActivity(intent);
-                        finish();
+                        if (credenciales == null || credenciales.length < 3) {
+                            Toast.makeText(AccesoActivity.this, "El archivo no tiene los 3 datos separados por ';'", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        final String dbNombre = credenciales[0];
+                        final String dbUsuario = credenciales[1];
+                        final String dbPassword = credenciales[2];
+
+                        ExecutorService executor = Executors.newSingleThreadExecutor();
+                        Handler handler = new Handler(Looper.getMainLooper());
+
+                        executor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                boolean conectado = false;
+                                try {
+                                    Controller c = Controller.getInstancia();
+                                    conectado = c.conectarBBDD(dbNombre, dbUsuario, dbPassword);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                boolean finalConectado = conectado;
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (finalConectado) {
+                                            Intent intent = new Intent(AccesoActivity.this, HomeActivity.class);
+                                            intent.putExtra("nombre", dbNombre);
+                                            startActivity(intent);
+                                            finish();
+                                        } else {
+                                            Toast.makeText(AccesoActivity.this, "No se pudo conectar a nacherdev.es. Revisa el Driver o la red.", Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+                                });
+                            }
+                        });
                     }
                 }
         );
-
     }
 }

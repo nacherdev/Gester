@@ -4,11 +4,7 @@ plugins {
 
 android {
     namespace = "com.example.gester"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.gester"
@@ -18,6 +14,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 
     buildTypes {
@@ -43,6 +45,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
-    implementation("mysql:mysql-connector-java:8.0.33")
+
+    implementation("mysql:mysql-connector-java:5.1.49")
+
     implementation("com.google.code.gson:gson:2.10.1")
 }
