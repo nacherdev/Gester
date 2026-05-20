@@ -96,6 +96,9 @@ public class AccesoActivity extends AppCompatActivity {
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
+                                        if (isFinishing() || isDestroyed()) {
+                                            return;
+                                        }
                                         if (finalConectado) {
                                             Intent intent = new Intent(AccesoActivity.this, HomeActivity.class);
                                             intent.putExtra("nombre", dbNombre);

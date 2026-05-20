@@ -57,7 +57,11 @@ public class HomeActivity extends AppCompatActivity {
                 homeFrag.setArguments(mochilaReutilizable);
                 selectedFragment = homeFrag;
             } else if (id == R.id.navigation_notifications) {
-                selectedFragment = new NotificationsFragment();
+                NotificationsFragment notificationFragment = new NotificationsFragment();
+                Bundle mochila = new Bundle();
+                mochila.putString("texto", "Hola esto es un mensaje");
+                notificationFragment.setArguments(mochila);
+                selectedFragment = notificationFragment;
             } else if (id == R.id.navigation_add) {
                 selectedFragment = new AddFragment();
             } else if (id == R.id.navigation_calendar) {

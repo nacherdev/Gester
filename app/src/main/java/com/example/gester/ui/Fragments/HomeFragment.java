@@ -1,16 +1,15 @@
 package com.example.gester.ui.Fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,105 +20,91 @@ import com.example.gester.controller.Controller;
 import com.example.gester.dao.models.Cita;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
+import java.util.Collections;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class HomeFragment extends Fragment {
 
-    private CalendarView calendarView;
-    private TextView txtBienvenida;
-    private TableLayout tablaCitas;
+    private TextView tvBienvenidaHome;
+    private TableLayout tableProximasCitas;
+    private Controller controller;
+    private ArrayList<Cita> listaCitasHome;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
-    }
+        View root = inflater.inflate(R.layout.fragment_home, container, false);
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        tvBienvenidaHome = root.findViewById(R.id.tvBienvenidaHome);
+        tableProximasCitas = root.findViewById(R.id.tableProximasCitas);
 
-        txtBienvenida = view.findViewById(R.id.textView2);
-        calendarView = view.findViewById(R.id.calendarView);
-        tablaCitas = view.findViewById(R.id.tablaCitas);
+        controller = Controller.getInstancia();
+        listaCitasHome = new ArrayList<>();
 
-        String nombreFinal = "Usuario";
         if (getArguments() != null) {
-            nombreFinal = getArguments().getString("nombre");
-        }
-        txtBienvenida.setText("¡" + nombreFinal + ", bienvenido!");
-
-        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                String fecha = dayOfMonth + "/" + (month + 1) + "/" + year;
-                Toast.makeText(getContext(), "Citas para el: " + fecha, Toast.LENGTH_SHORT).show();
+            String nombreUsuario = getArguments().getString("nombre");
+            if (nombreUsuario != null && !nombreUsuario.isEmpty()) {
+                tvBienvenidaHome.setText("¡Bienvenido, " + nombreUsuario + "!");
             }
-        });
+        }
 
-        cargarCitasDesdeSegundoPlano();
+        cargarCitasCincoDias();
+
+        return root;
     }
 
-    private void cargarCitasDesdeSegundoPlano() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+    private void cargarCitasCincoDias() {
+        Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                ArrayList<Cita> listaCitas = new ArrayList<>();
-                try {
-                    Controller c = Controller.getInstancia();
-                    listaCitas = c.getCitas();
-                } catch (Exception e) {
-                    e.printStackTrace();
+        executor.execute(() -> {
+            ArrayList<Cita> proximas = controller.obtenerCitasProximosDias();
+
+            handler.post(() -> {
+                if (!isAdded() || getContext() == null) {
+                    return;
                 }
+                if (proximas != null && !proximas.isEmpty()) {
+                    listaCitasHome.clear();
+                    listaCitasHome.addAll(proximas);
 
-                ArrayList<Cita> finalListaCitas = listaCitas;
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!isAdded()) return;
+                    Collections.sort(listaCitasHome);
 
-                        if (finalListaCitas != null && !finalListaCitas.isEmpty()) {
-                            llenarTabla(finalListaCitas);
-                        } else {
-                            Toast.makeText(getContext(), "No se encontraron citas en la base de datos.", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-            }
+                    pintarTablaHome(listaCitasHome);
+                }
+            });
         });
     }
 
-    private void llenarTabla(ArrayList<Cita> citas) {
-        int filasExistentes = tablaCitas.getChildCount();
-        if (filasExistentes > 1) {
-            tablaCitas.removeViews(1, filasExistentes - 1);
+    private void pintarTablaHome(ArrayList<Cita> citas) {
+        int filasActuales = tableProximasCitas.getChildCount();
+        if (filasActuales > 1) {
+            tableProximasCitas.removeViews(1, filasActuales - 1);
         }
 
         for (Cita cita : citas) {
             TableRow fila = new TableRow(getContext());
-            fila.setPadding(8, 8, 8, 8);
+            fila.setPadding(8, 16, 8, 16);
 
-            TextView txtCliente = new TextView(getContext());
-            txtCliente.setText(cita.getUsuario().getNombre());
-            txtCliente.setTextSize(14);
+            TextView tvFechaHora = new TextView(getContext());
+            String fechaCorta = cita.getFecha().substring(5);
+            tvFechaHora.setText(fechaCorta + " (" + cita.getHora() + ")");
+            tvFechaHora.setTextColor(Color.BLACK);
 
-            TextView txtServicio = new TextView(getContext());
-            txtServicio.setText(cita.getServicio().getNombreServicio());
-            txtServicio.setTextSize(14);
+            TextView tvCliente = new TextView(getContext());
+            tvCliente.setText(cita.getUsuario().getNombre());
+            tvCliente.setTextColor(Color.BLACK);
 
-            TextView txtFechaHora = new TextView(getContext());
-            txtFechaHora.setText(cita.getFecha() + " " + cita.getHora());
-            txtFechaHora.setTextSize(14);
+            TextView tvServicio = new TextView(getContext());
+            tvServicio.setText(cita.getServicio().getNombreServicio());
+            tvServicio.setTextColor(Color.DKGRAY);
 
-            fila.addView(txtCliente);
-            fila.addView(txtServicio);
-            fila.addView(txtFechaHora);
+            fila.addView(tvFechaHora);
+            fila.addView(tvCliente);
+            fila.addView(tvServicio);
 
-            tablaCitas.addView(fila);
+            tableProximasCitas.addView(fila);
         }
     }
 }

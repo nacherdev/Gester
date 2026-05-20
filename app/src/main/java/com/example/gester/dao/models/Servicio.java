@@ -47,11 +47,6 @@ public class Servicio {
 
     @Override
     public String toString() {
-        return "Servicio{" +
-                "id=" + id +
-                ", nombreServicio='" + nombreServicio + '\'' +
-                ", duracion=" + duracion +
-                ", precio=" + precio +
-                '}';
+        return this.nombreServicio;
     }
 }

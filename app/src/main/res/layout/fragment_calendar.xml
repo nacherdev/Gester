@@ -6,41 +6,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    tools:context=".ui.Fragments.HomeFragment">
+    tools:context=".ui.fragments.CalendarFragment">
 
-    <TextView
-        android:id="@+id/tvBienvenidaHome"
-        android:layout_width="wrap_content"
+    <CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="¡Bienvenido!"
-        android:textColor="@android:color/black"
-        android:textSize="22sp"
-        android:textStyle="bold"
+        android:background="@android:color/white"
+        android:elevation="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tvSubtituloHome"
+        android:id="@+id/tvTituloCitas"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Próximas citas (Siguientes 5 días)"
-        android:textColor="@android:color/darker_gray"
-        android:textSize="14sp"
+        android:layout_marginTop="16dp"
+        android:text="Citas de la fecha seleccionada"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvBienvenidaHome" />
+        app:layout_constraintTop_toBottomOf="@+id/calendarView" />
 
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvSubtituloHome">
+        app:layout_constraintTop_toBottomOf="@+id/tvTituloCitas">
 
         <TableLayout
-            android:id="@+id/tableProximasCitas"
+            android:id="@+id/tableCitas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:stretchColumns="*">
@@ -48,24 +48,31 @@
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#EAEAEA"
+                android:background="#E0E0E0"
                 android:padding="8dp">
 
                 <TextView
-                    android:text="Fecha/Hora"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hora"
                     android:textColor="@android:color/black"
                     android:textStyle="bold" />
 
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="Cliente"
                     android:textColor="@android:color/black"
                     android:textStyle="bold" />
 
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="Servicio"
                     android:textColor="@android:color/black"
                     android:textStyle="bold" />
             </TableRow>
+
         </TableLayout>
     </ScrollView>
 
