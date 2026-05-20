@@ -28,13 +28,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         new Handler(Looper.getMainLooper()).postDelayed(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        Intent intent = new Intent(MainActivity.this, AccesoActivity.class);
-                        startActivity(intent);
-                        finish();
+                () -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
                     }
+                    Intent intent = new Intent(MainActivity.this, AccesoActivity.class);
+                    startActivity(intent);
+                    finish();
                 }, 3000);
     }
 }
