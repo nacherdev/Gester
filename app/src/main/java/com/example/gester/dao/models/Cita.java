@@ -1,6 +1,6 @@
 package com.example.gester.dao.models;
 
-public class Cita {
+public class Cita implements Comparable<Cita> {
 
     private int id;
     private Usuario usuario;
@@ -87,5 +87,15 @@ public class Cita {
                 ", estado=" + estado +
                 ", fechaDeCreacion='" + fechaDeCreacion + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Cita otraCita) {
+        int resultadoFecha = this.getFecha().compareTo(otraCita.getFecha());
+        if (resultadoFecha == 0) {
+            return this.getHora().compareTo(otraCita.getHora());
+        }
+
+        return resultadoFecha;
     }
 }

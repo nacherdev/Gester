@@ -1,66 +1,114 @@
 package com.example.gester.ui.Fragments;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.example.gester.R;
+import com.example.gester.controller.Controller;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link AddFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 public class AddFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private Button btnSeleccionarFecha;
+    private TextView tvFechaSeleccionada;
+    private Spinner spinnerHoras;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private Controller controller;
+    private String fechaFinalMsql = "";
 
-    public AddFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment AddFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static AddFragment newInstance(String param1, String param2) {
-        AddFragment fragment = new AddFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_add, container, false);
+
+        btnSeleccionarFecha = root.findViewById(R.id.btnSeleccionarFecha);
+        tvFechaSeleccionada = root.findViewById(R.id.tvFechaSeleccionada);
+        spinnerHoras = root.findViewById(R.id.spinnerHoras);
+
+        controller = Controller.getInstancia();
+
+        btnSeleccionarFecha.setOnClickListener(v -> mostrarMinicalendario());
+
+        return root;
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add, container, false);
+    private void mostrarMinicalendario() {
+        Calendar calendar = Calendar.getInstance();
+        int anyo = calendar.get(Calendar.YEAR);
+        int mes = calendar.get(Calendar.MONTH);
+        int dia = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(), (view, year, month, dayOfMonth) -> {
+            int mesReal = month + 1;
+
+            fechaFinalMsql = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, mesReal, dayOfMonth);
+            tvFechaSeleccionada.setText(dayOfMonth + "/" + mesReal + "/" + year);
+
+            actualizarSpinnerHorasLibres(fechaFinalMsql);
+
+        }, anyo, mes, dia);
+
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+        datePickerDialog.show();
+    }
+
+    private void actualizarSpinnerHorasLibres(String fecha) {
+        Executor executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            ArrayList<String> ocupadas = controller.obtenerHorasOcupadasPorFecha(fecha);
+            ArrayList<String> todasLasHoras = generarHorario();
+
+            todasLasHoras.removeAll(ocupadas);
+
+            handler.post(() -> {
+                if (!isAdded() || getContext() == null) {
+                    return;
+                }
+                if (todasLasHoras.isEmpty()) {
+                    todasLasHoras.add("Día completo (Sin horas libres)");
+                }
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
+                        android.R.layout.simple_spinner_item, todasLasHoras);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+                spinnerHoras.setAdapter(adapter);
+            });
+        });
+    }
+
+    private ArrayList<String> generarHorario() {
+        ArrayList<String> horario = new ArrayList<>();
+        horario.add("09:00"); horario.add("09:30");
+        horario.add("10:00"); horario.add("10:30");
+        horario.add("11:00"); horario.add("11:30");
+        horario.add("12:00"); horario.add("12:30");
+        horario.add("13:00"); horario.add("13:30");
+        horario.add("16:00"); horario.add("16:30");
+        horario.add("17:00"); horario.add("17:30");
+        horario.add("18:00"); horario.add("18:30");
+        horario.add("19:00"); horario.add("19:30");
+        horario.add("20:00");
+        return horario;
     }
 }

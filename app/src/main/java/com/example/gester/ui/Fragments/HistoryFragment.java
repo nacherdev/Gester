@@ -1,66 +1,110 @@
 package com.example.gester.ui.Fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.example.gester.R;
+import com.example.gester.controller.Controller;
+import com.example.gester.dao.models.Cita;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HistoryFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 public class HistoryFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private TableLayout tableHistorial;
+    private Controller controller;
+    private ArrayList<Cita> listaHistorial;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public HistoryFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HistoryFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HistoryFragment newInstance(String param1, String param2) {
-        HistoryFragment fragment = new HistoryFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_history, container, false);
+
+        tableHistorial = root.findViewById(R.id.tableHistorial);
+
+        controller = Controller.getInstancia();
+        listaHistorial = new ArrayList<>();
+
+        cargarDatosDelHistorial();
+
+        return root;
+    }
+
+    private void cargarDatosDelHistorial() {
+        Executor executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            ArrayList<Cita> todas = controller.getCitas();
+
+            handler.post(() -> {
+                if (!isAdded() || getContext() == null) {
+                    return;
+                }
+                if (todas != null && !todas.isEmpty()) {
+                    listaHistorial.clear();
+                    listaHistorial.addAll(todas);
+
+                    Collections.sort(listaHistorial, (c1, c2) ->
+                            c2.getFechaDeCreacion().compareTo(c1.getFechaDeCreacion())
+                    );
+
+                    pintarTabla(listaHistorial);
+                } else {
+                    Toast.makeText(getContext(), "Historial vacío", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    private void pintarTabla(ArrayList<Cita> citas) {
+        int filasActuales = tableHistorial.getChildCount();
+        if (filasActuales > 1) {
+            tableHistorial.removeViews(1, filasActuales - 1);
         }
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_history, container, false);
+        for (Cita cita : citas) {
+            TableRow fila = new TableRow(getContext());
+            fila.setPadding(0, 20, 0, 20);
+
+            TextView tvCreada = new TextView(getContext());
+            tvCreada.setText(cita.getFechaDeCreacion());
+            tvCreada.setTextColor(Color.BLACK);
+            tvCreada.setTextSize(14);
+
+            TextView tvCliente = new TextView(getContext());
+            String nombreFull = cita.getUsuario().getNombre() + " " + cita.getUsuario().getApellidos();
+            tvCliente.setText(nombreFull);
+            tvCliente.setTextColor(Color.BLACK);
+            tvCliente.setTextSize(14);
+
+            TextView tvInfoCita = new TextView(getContext());
+            String info = cita.getFecha() + "\n" + cita.getHora();
+            tvInfoCita.setText(info);
+            tvInfoCita.setTextColor(Color.GRAY);
+            tvInfoCita.setTextSize(12);
+
+            fila.addView(tvCreada);
+            fila.addView(tvCliente);
+            fila.addView(tvInfoCita);
+
+            tableHistorial.addView(fila);
+        }
     }
 }

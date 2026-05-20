@@ -10,7 +10,7 @@ public class ControllerTest {
 
     @Test
     public void conectarbbdd(){
-        Controller c = new Controller();
+        Controller c = Controller.getInstancia();
         assertTrue(c.conectarBBDD("gester","admin_gester","IasenCopysen67"));
         System.out.println(c.getCitas());
     }
