@@ -1,14 +1,12 @@
 package com.example.gester.ui.Fragments;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TableLayout;
-import android.widget.TableRow;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +25,7 @@ import java.util.concurrent.Executors;
 
 public class HistoryFragment extends Fragment {
 
-    private TableLayout tableHistorial;
+    private LinearLayout containerHistorial;
     private Controller controller;
     private ArrayList<Cita> listaHistorial;
 
@@ -36,7 +34,7 @@ public class HistoryFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_history, container, false);
 
-        tableHistorial = root.findViewById(R.id.tableHistorial);
+        containerHistorial = root.findViewById(R.id.containerHistorial);
 
         controller = Controller.getInstancia();
         listaHistorial = new ArrayList<>();
@@ -47,6 +45,17 @@ public class HistoryFragment extends Fragment {
     }
 
     private void cargarDatosDelHistorial() {
+        if (containerHistorial != null) {
+            containerHistorial.removeAllViews();
+            TextView tvCargando = new TextView(getContext());
+            tvCargando.setText("Buscando registros...");
+            tvCargando.setTextSize(15);
+            tvCargando.setTextColor(android.graphics.Color.parseColor("#6B7280"));
+            tvCargando.setPadding(32, 32, 32, 32);
+            tvCargando.setGravity(android.view.Gravity.CENTER);
+            containerHistorial.addView(tvCargando);
+        }
+
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
@@ -67,6 +76,7 @@ public class HistoryFragment extends Fragment {
 
                     pintarTabla(listaHistorial);
                 } else {
+                    if (containerHistorial != null) containerHistorial.removeAllViews();
                     Toast.makeText(getContext(), "Historial vacío", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -74,37 +84,41 @@ public class HistoryFragment extends Fragment {
     }
 
     private void pintarTabla(ArrayList<Cita> citas) {
-        int filasActuales = tableHistorial.getChildCount();
-        if (filasActuales > 1) {
-            tableHistorial.removeViews(1, filasActuales - 1);
-        }
+        if (containerHistorial == null) return;
+
+        containerHistorial.removeAllViews();
+        LayoutInflater inflater = LayoutInflater.from(getContext());
 
         for (Cita cita : citas) {
-            TableRow fila = new TableRow(getContext());
-            fila.setPadding(0, 20, 0, 20);
+            View cardItem = inflater.inflate(R.layout.item_historial, containerHistorial, false);
 
-            TextView tvCreada = new TextView(getContext());
-            tvCreada.setText(cita.getFechaDeCreacion());
-            tvCreada.setTextColor(Color.BLACK);
-            tvCreada.setTextSize(14);
+            TextView tvCitaInfo = cardItem.findViewById(R.id.tvHistorialCita);
+            TextView tvCliente = cardItem.findViewById(R.id.tvHistorialCliente);
+            TextView tvCreada = cardItem.findViewById(R.id.tvHistorialCreada);
 
-            TextView tvCliente = new TextView(getContext());
+            String infoCita = cita.getFecha() + "\n" + cita.getHora();
+            tvCitaInfo.setText(infoCita);
+
             String nombreFull = cita.getUsuario().getNombre() + " " + cita.getUsuario().getApellidos();
             tvCliente.setText(nombreFull);
-            tvCliente.setTextColor(Color.BLACK);
-            tvCliente.setTextSize(14);
 
-            TextView tvInfoCita = new TextView(getContext());
-            String info = cita.getFecha() + "\n" + cita.getHora();
-            tvInfoCita.setText(info);
-            tvInfoCita.setTextColor(Color.GRAY);
-            tvInfoCita.setTextSize(12);
+            tvCreada.setText("Creado el: " + cita.getFechaDeCreacion());
 
-            fila.addView(tvCreada);
-            fila.addView(tvCliente);
-            fila.addView(tvInfoCita);
+            cardItem.setOnClickListener(v -> {
+                EditAppointmentFragment editFrag = new EditAppointmentFragment();
+                Bundle mochila = new Bundle();
+                mochila.putInt("id_cita", cita.getId());
+                editFrag.setArguments(mochila);
 
-            tableHistorial.addView(fila);
+                if (getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, editFrag)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            });
+
+            containerHistorial.addView(cardItem);
         }
     }
 }

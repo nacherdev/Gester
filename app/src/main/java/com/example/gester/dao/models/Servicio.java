@@ -13,6 +13,10 @@ public class Servicio {
         this.precio = precio;
     }
 
+    public Servicio() {
+        this.nombreServicio = "Sin servicios";
+    }
+
     public int getId() {
         return id;
     }

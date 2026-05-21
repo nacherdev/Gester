@@ -3,6 +3,7 @@ package com.example.gester.dao;
 import com.example.gester.dao.models.Cita;
 import com.example.gester.dao.models.Servicio;
 import com.example.gester.dao.models.Usuario;
+import com.example.gester.dao.models.Notificacion;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -364,7 +365,7 @@ public class Dao {
         ArrayList<String> horasOcupadas = new ArrayList<>();
         if (!conectar()) return horasOcupadas;
 
-        String sql = "SELECT SUBSTRING(hora, 1, 5) AS hora FROM citas WHERE fecha = ? AND estado = 1";
+        String sql = "SELECT hora AS hora FROM citas WHERE fecha = ? AND estado = 1";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, fecha);
@@ -381,4 +382,198 @@ public class Dao {
         return horasOcupadas;
     }
 
+    public boolean registrarNotificacion(String titulo, String mensaje) {
+        if (!conectar()) return false;
+        String sql = "INSERT INTO notificaciones (titulo, mensaje) VALUES (?, ?)";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, titulo);
+            ps.setString(2, mensaje);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            desconectar();
+        }
+    }
+
+    public ArrayList<Notificacion> obtenerNotificaciones() {
+        ArrayList<Notificacion> lista = new ArrayList<>();
+        if (!conectar()) return lista;
+        String sql = "SELECT id, titulo, mensaje, DATE_FORMAT(fecha_envio, '%Y-%m-%d %H:%i') AS fecha FROM notificaciones ORDER BY fecha_envio DESC";
+        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                lista.add(new Notificacion(
+                        rs.getInt("id"),
+                        rs.getString("titulo"),
+                        rs.getString("mensaje"),
+                        rs.getString("fecha")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            desconectar();
+        }
+        return lista;
+    }
+
+    public boolean eliminarNotificacion(int id) {
+        if (!conectar()) return false;
+        String sql = "DELETE FROM notificaciones WHERE id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            desconectar();
+        }
+    }
+
+    public void verificarCitasProximas() {
+        if (!conectar()) return;
+        String sqlInsert = "INSERT INTO notificaciones (titulo, mensaje) " +
+                "SELECT 'Cita Próxima', CONCAT('Recordatorio: El cliente ', u.nombre, ' tiene una cita mañana a las ', SUBSTRING(c.hora, 1, 5)) " +
+                "FROM citas c " +
+                "INNER JOIN usuarios u ON c.id_usuario = u.id " +
+                "WHERE c.fecha = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND c.estado = 1 " +
+                "AND NOT EXISTS ( " +
+                "    SELECT 1 FROM notificaciones n " +
+                "    WHERE n.titulo = 'Cita Próxima' " +
+                "    AND n.mensaje LIKE CONCAT('%', u.nombre, '%') " +
+                "    AND n.mensaje LIKE CONCAT('%', SUBSTRING(c.hora, 1, 5), '%') " +
+                "    AND DATE(n.fecha_envio) = CURDATE() " +
+                ")";
+        try (Statement st = con.createStatement()) {
+            st.executeUpdate(sqlInsert);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            desconectar();
+        }
+    }
+
+    public Cita obtenerCitaPorId(int idCita) {
+        if (!conectar()) return null;
+        String sql = "SELECT c.id, c.id_usuario, c.id_servicio, c.fecha, c.hora, c.estado, c.fecha_creacion, " +
+                "u.nombre AS usr_nombre, u.apellidos AS usr_apellidos, u.DNI AS usr_dni, u.fecha_nacimiento AS usr_nacimiento, " +
+                "s.nombre_servicio AS srv_nombre, s.duracion AS srv_duracion, s.precio AS srv_precio " +
+                "FROM citas c " +
+                "JOIN usuarios u ON c.id_usuario = u.id " +
+                "JOIN servicios s ON c.id_servicio = s.id " +
+                "WHERE c.id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idCita);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Usuario usuario = new Usuario(
+                            rs.getInt("id_usuario"),
+                            rs.getString("usr_nombre"),
+                            rs.getString("usr_apellidos"),
+                            rs.getString("usr_dni"),
+                            rs.getString("usr_nacimiento")
+                    );
+                    Servicio servicio = new Servicio(
+                            rs.getInt("id_servicio"),
+                            rs.getString("srv_nombre"),
+                            rs.getInt("srv_duracion"),
+                            rs.getDouble("srv_precio")
+                    );
+                    return new Cita(
+                            rs.getInt("id"),
+                            usuario,
+                            servicio,
+                            rs.getString("fecha"),
+                            rs.getString("hora"),
+                            rs.getBoolean("estado"),
+                            rs.getString("fecha_creacion")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            desconectar();
+        }
+        return null;
+    }
+
+    public boolean actualizarCita(int idCita, int idServicio, String fecha, String hora) {
+        if (!conectar()) return false;
+        String sql = "UPDATE citas SET id_servicio = ?, fecha = ?, hora = ? WHERE id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idServicio);
+            ps.setString(2, fecha);
+            ps.setString(3, hora);
+            ps.setInt(4, idCita);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            desconectar();
+        }
+    }
+
+    public boolean eliminarCita(int idCita) {
+        if (!conectar()) return false;
+        String sql = "DELETE FROM citas WHERE id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idCita);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            desconectar();
+        }
+    }
+
+    public Usuario buscarPorDni(String dni) {
+        if (dni != null) {
+            dni = dni.trim().toUpperCase();
+        }
+        conectar();
+
+        if (!conectar()) return null;
+
+        String sql = "SELECT id, nombre, apellidos, DNI, fecha_nacimiento FROM usuarios WHERE DNI = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, dni);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String fechaBBDD = rs.getString("fecha_nacimiento");
+                    String fechaFormateada = "";
+
+                    if (fechaBBDD != null && fechaBBDD.contains("-")) {
+                        String[] partes = fechaBBDD.split("-");
+                        if (partes.length == 3) {
+                            fechaFormateada = partes[2] + "/" + partes[1] + "/" + partes[0];
+                        } else {
+                            fechaFormateada = fechaBBDD;
+                        }
+                    } else {
+                        fechaFormateada = fechaBBDD;
+                    }
+
+                    return new Usuario(
+                            rs.getInt("id"),
+                            rs.getString("nombre"),
+                            rs.getString("apellidos"),
+                            rs.getString("DNI"),
+                            fechaFormateada
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            desconectar();
+        }
+        return null;
+    }
 }

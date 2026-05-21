@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    android:layout_marginHorizontal="2dp"
+    android:background="#00000000">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="1dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="#FFFFFF">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:background="@drawable/notification_card_bg">
+
+            <TextView
+                android:id="@+id/tvItemTitulo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:textColor="#111827"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                app:layout_constraintEnd_toStartOf="@+id/tvItemFecha"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tvItemFecha"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#9CA3AF"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif"
+                app:layout_constraintBottom_toBottomOf="@+id/tvItemTitulo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/tvItemTitulo" />
+
+            <TextView
+                android:id="@+id/tvItemMensaje"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="#4B5563"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif"
+                android:lineSpacingMultiplier="1.15"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvItemTitulo"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</FrameLayout>

@@ -1,14 +1,12 @@
 package com.example.gester.ui.Fragments;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TableLayout;
-import android.widget.TableRow;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,7 +25,7 @@ import java.util.concurrent.Executors;
 public class HomeFragment extends Fragment {
 
     private TextView tvBienvenidaHome;
-    private TableLayout tableProximasCitas;
+    private LinearLayout containerProximasCitas;
     private Controller controller;
     private ArrayList<Cita> listaCitasHome;
 
@@ -37,40 +35,44 @@ public class HomeFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
         tvBienvenidaHome = root.findViewById(R.id.tvBienvenidaHome);
-        tableProximasCitas = root.findViewById(R.id.tableProximasCitas);
+        containerProximasCitas = root.findViewById(R.id.containerProximasCitas);
 
         controller = Controller.getInstancia();
         listaCitasHome = new ArrayList<>();
 
         if (getArguments() != null) {
-            String nombreUsuario = getArguments().getString("nombre");
-            if (nombreUsuario != null && !nombreUsuario.isEmpty()) {
-                tvBienvenidaHome.setText("¡Bienvenido, " + nombreUsuario + "!");
-            }
+            String nombre = getArguments().getString("nombre", "Usuario");
+            tvBienvenidaHome.setText("¡Bienvenido, " + nombre + "!");
         }
 
-        cargarCitasCincoDias();
+        cargarDatosHome();
 
         return root;
     }
 
-    private void cargarCitasCincoDias() {
+    private void cargarDatosHome() {
+        if (containerProximasCitas != null) {
+            containerProximasCitas.removeAllViews();
+            TextView tvCargando = new TextView(getContext());
+            tvCargando.setText("Buscando citas...");
+            tvCargando.setTextSize(15);
+            tvCargando.setTextColor(android.graphics.Color.parseColor("#6B7280"));
+            tvCargando.setPadding(32, 32, 32, 32);
+            tvCargando.setGravity(android.view.Gravity.CENTER);
+            containerProximasCitas.addView(tvCargando);
+        }
+
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
         executor.execute(() -> {
-            ArrayList<Cita> proximas = controller.obtenerCitasProximosDias();
+            ArrayList<Cita> proximas = controller.getCitas();
 
             handler.post(() -> {
-                if (!isAdded() || getContext() == null) {
-                    return;
-                }
-                if (proximas != null && !proximas.isEmpty()) {
+                if (isAdded() && proximas != null) {
                     listaCitasHome.clear();
                     listaCitasHome.addAll(proximas);
-
                     Collections.sort(listaCitasHome);
-
                     pintarTablaHome(listaCitasHome);
                 }
             });
@@ -78,33 +80,44 @@ public class HomeFragment extends Fragment {
     }
 
     private void pintarTablaHome(ArrayList<Cita> citas) {
-        int filasActuales = tableProximasCitas.getChildCount();
-        if (filasActuales > 1) {
-            tableProximasCitas.removeViews(1, filasActuales - 1);
-        }
+        if (containerProximasCitas == null) return;
+
+        containerProximasCitas.removeAllViews();
+        LayoutInflater inflater = LayoutInflater.from(getContext());
 
         for (Cita cita : citas) {
-            TableRow fila = new TableRow(getContext());
-            fila.setPadding(8, 16, 8, 16);
+            if (cita.isEstado()) {
+                View cardCita = inflater.inflate(R.layout.item_cita_home, containerProximasCitas, false);
 
-            TextView tvFechaHora = new TextView(getContext());
-            String fechaCorta = cita.getFecha().substring(5);
-            tvFechaHora.setText(fechaCorta + " (" + cita.getHora() + ")");
-            tvFechaHora.setTextColor(Color.BLACK);
+                TextView tvCardFecha = cardCita.findViewById(R.id.tvCardFecha);
+                TextView tvCardHora = cardCita.findViewById(R.id.tvCardHora);
+                TextView tvCardCliente = cardCita.findViewById(R.id.tvCardCliente);
+                TextView tvCardServicio = cardCita.findViewById(R.id.tvCardServicio);
 
-            TextView tvCliente = new TextView(getContext());
-            tvCliente.setText(cita.getUsuario().getNombre());
-            tvCliente.setTextColor(Color.BLACK);
+                String fechaOriginal = cita.getFecha();
+                String fechaCorta = fechaOriginal.length() > 5 ? fechaOriginal.substring(5) : fechaOriginal;
 
-            TextView tvServicio = new TextView(getContext());
-            tvServicio.setText(cita.getServicio().getNombreServicio());
-            tvServicio.setTextColor(Color.DKGRAY);
+                tvCardFecha.setText(fechaCorta);
+                tvCardHora.setText(cita.getHora());
+                tvCardCliente.setText(cita.getUsuario().getNombre());
+                tvCardServicio.setText(cita.getServicio().getNombreServicio());
 
-            fila.addView(tvFechaHora);
-            fila.addView(tvCliente);
-            fila.addView(tvServicio);
+                cardCita.setOnClickListener(v -> {
+                    EditAppointmentFragment editFrag = new EditAppointmentFragment();
+                    Bundle mochila = new Bundle();
+                    mochila.putInt("id_cita", cita.getId());
+                    editFrag.setArguments(mochila);
 
-            tableProximasCitas.addView(fila);
+                    if (getActivity() != null) {
+                        getActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, editFrag)
+                                .addToBackStack(null)
+                                .commit();
+                    }
+                });
+
+                containerProximasCitas.addView(cardCita);
+            }
         }
     }
 }
