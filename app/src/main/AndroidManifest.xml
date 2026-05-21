@@ -36,6 +36,11 @@
             android:exported="false">
         </activity>
 
+        <activity
+            android:name=".ui.RegistrarActivity"
+            android:exported="false">
+        </activity>
+
     </application>
 
 </manifest>

@@ -7,23 +7,20 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
+import com.example.gester.R;
+import com.example.gester.controller.Controller;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import com.example.gester.R;
-import com.example.gester.controller.Controller;
 
 public class AccesoActivity extends AppCompatActivity {
 
@@ -35,84 +32,74 @@ public class AccesoActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.acceso);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_acceso), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
         btnIniciarSesion = findViewById(R.id.btn_login);
         btnRegistrarse = findViewById(R.id.btn_signup);
 
-        btnIniciarSesion.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String[] credenciales = null;
-                        String linea = "";
-                        InputStream is = null;
-                        BufferedReader br = null;
+        btnRegistrarse.setOnClickListener(v -> {
+            Intent intent = new Intent(AccesoActivity.this, RegistrarActivity.class);
+            startActivity(intent);
+        });
 
-                        try {
-                            is = getAssets().open("BBDD.txt");
-                            br = new BufferedReader(new InputStreamReader(is));
-                            linea = br.readLine();
+        btnIniciarSesion.setOnClickListener(v -> intentarConexion());
+    }
 
-                            if (linea != null && !linea.trim().isEmpty()) {
-                                credenciales = linea.trim().split(";");
-                            }
+    private void intentarConexion() {
+        String[] credenciales = null;
+        try {
+            File archivoInterno = new File(getFilesDir(), "BBDD.txt");
+            InputStream is;
 
-                            br.close();
-                            is.close();
-                        } catch (IOException e) {
-                            Toast.makeText(AccesoActivity.this, "Error al leer BBDD.txt", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
+            if (archivoInterno.exists()) {
+                is = new FileInputStream(archivoInterno);
+            } else {
+                is = getAssets().open("BBDD.txt");
+            }
 
-                        if (credenciales == null || credenciales.length < 3) {
-                            Toast.makeText(AccesoActivity.this, "El archivo no tiene los 3 datos separados por ';'", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String linea = br.readLine();
+            if (linea != null && !linea.trim().isEmpty()) {
+                credenciales = linea.trim().split(";");
+            }
+            br.close();
+            is.close();
+        } catch (IOException e) {
+            Toast.makeText(this, "Error leyendo configuración", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                        final String dbNombre = credenciales[0];
-                        final String dbUsuario = credenciales[1];
-                        final String dbPassword = credenciales[2];
+        if (credenciales == null || credenciales.length < 3) {
+            Toast.makeText(this, "No hay credenciales registradas", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-                        ExecutorService executor = Executors.newSingleThreadExecutor();
-                        Handler handler = new Handler(Looper.getMainLooper());
+        final String dbNombre = credenciales[0];
+        final String dbUsuario = credenciales[1];
+        final String dbPassword = credenciales[2];
 
-                        executor.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                boolean conectado = false;
-                                try {
-                                    Controller c = Controller.getInstancia();
-                                    conectado = c.conectarBBDD(dbNombre, dbUsuario, dbPassword);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
 
-                                boolean finalConectado = conectado;
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (isFinishing() || isDestroyed()) {
-                                            return;
-                                        }
-                                        if (finalConectado) {
-                                            Intent intent = new Intent(AccesoActivity.this, HomeActivity.class);
-                                            intent.putExtra("nombre", dbNombre);
-                                            startActivity(intent);
-                                            finish();
-                                        } else {
-                                            Toast.makeText(AccesoActivity.this, "No se pudo conectar a nacherdev.es. Revisa el Driver o la red.", Toast.LENGTH_LONG).show();
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                    }
+        executor.execute(() -> {
+            boolean conectado = false;
+            try {
+                Controller c = Controller.getInstancia();
+                conectado = c.conectarBBDD(dbNombre, dbUsuario, dbPassword);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            final boolean finalConectado = conectado;
+            handler.post(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                if (finalConectado) {
+                    Intent intent = new Intent(AccesoActivity.this, HomeActivity.class);
+                    intent.putExtra("nombre", dbNombre);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(AccesoActivity.this, "Error de conexión. Verifica los datos.", Toast.LENGTH_LONG).show();
                 }
-        );
+            });
+        });
     }
 }
