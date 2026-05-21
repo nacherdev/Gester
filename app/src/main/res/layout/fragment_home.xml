@@ -1,72 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://tools.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    tools:context=".ui.Fragments.HomeFragment">
+    android:orientation="vertical"
+    android:background="#F3F6FA">
 
-    <TextView
-        android:id="@+id/tvBienvenidaHome"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="¡Bienvenido!"
-        android:textColor="@android:color/black"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="32dp"
+        android:paddingBottom="24dp">
 
-    <TextView
-        android:id="@+id/tvSubtituloHome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Próximas citas (Siguientes 5 días)"
-        android:textColor="@android:color/darker_gray"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvBienvenidaHome" />
-
-    <ScrollView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvSubtituloHome">
-
-        <TableLayout
-            android:id="@+id/tableProximasCitas"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:stretchColumns="*">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <TableRow
+            <TextView
+                android:id="@+id/tvBienvenidaHome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:fontFamily="sans-serif-black"
+                android:textColor="#111827"
+                android:text="¡Bienvenido!" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="#6B7280"
+                android:layout_marginTop="4dp"
+                android:text="Gestiona tus citas de hoy" />
+        </LinearLayout>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#D1E3F8">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:src="@drawable/logo_gester"
+                android:contentDescription="Avatar" />
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#4B5563"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="12dp"
+            android:letterSpacing="0.05"
+            android:text="PRÓXIMAS CITAS" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/containerProximasCitas"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#EAEAEA"
-                android:padding="8dp">
+                android:orientation="vertical"
+                android:paddingBottom="24dp" />
+        </ScrollView>
+    </LinearLayout>
 
-                <TextView
-                    android:text="Fecha/Hora"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:text="Cliente"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:text="Servicio"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold" />
-            </TableRow>
-        </TableLayout>
-    </ScrollView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

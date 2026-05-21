@@ -1,62 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://tools.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    tools:context=".ui.Fragments.HistoryFragment">
+    android:orientation="vertical"
+    android:background="#F3F6FA"
+    android:padding="24dp">
 
     <TextView
         android:id="@+id/tvTituloHistorial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Historial de Registros"
-        android:textColor="@android:color/black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:textColor="#111827"
+        android:textSize="26sp"
+        android:fontFamily="sans-serif-black" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Consulta el historialde todas las citas"
+        android:textColor="#6B7280"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="20dp" />
 
     <ScrollView
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvTituloHistorial">
+        android:layout_weight="1"
+        android:scrollbars="none">
 
-        <TableLayout
-            android:id="@+id/tableHistorial"
+        <LinearLayout
+            android:id="@+id/containerHistorial"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:stretchColumns="*">
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#D1D1D1"
-                android:padding="10dp">
-
-                <TextView
-                    android:text="Creada"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:text="Cliente"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:text="Cita"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold" />
-            </TableRow>
-
-        </TableLayout>
+            android:orientation="vertical"
+            android:paddingBottom="16dp" />
     </ScrollView>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

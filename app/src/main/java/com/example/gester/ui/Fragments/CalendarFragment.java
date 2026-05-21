@@ -1,6 +1,5 @@
 package com.example.gester.ui.Fragments;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,8 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CalendarView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +28,7 @@ import java.util.concurrent.Executors;
 public class CalendarFragment extends Fragment {
 
     private CalendarView calendarView;
-    private TableLayout tableCitas;
+    private LinearLayout containerCitasCalendario;
     private TextView tvTituloCitas;
 
     private Controller controller;
@@ -42,7 +40,7 @@ public class CalendarFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_calendar, container, false);
 
         calendarView = root.findViewById(R.id.calendarView);
-        tableCitas = root.findViewById(R.id.tableCitas);
+        containerCitasCalendario = root.findViewById(R.id.containerCitasCalendario);
         tvTituloCitas = root.findViewById(R.id.tvTituloCitas);
 
         controller = Controller.getInstancia();
@@ -65,6 +63,17 @@ public class CalendarFragment extends Fragment {
     }
 
     private void buscarCitasPorFecha(String fecha) {
+        if (containerCitasCalendario != null) {
+            containerCitasCalendario.removeAllViews();
+            TextView tvCargando = new TextView(getContext());
+            tvCargando.setText("Buscando...");
+            tvCargando.setTextSize(15);
+            tvCargando.setTextColor(android.graphics.Color.parseColor("#6B7280"));
+            tvCargando.setPadding(32, 32, 32, 32);
+            tvCargando.setGravity(android.view.Gravity.CENTER);
+            containerCitasCalendario.addView(tvCargando);
+        }
+
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
@@ -79,48 +88,56 @@ public class CalendarFragment extends Fragment {
                 if (citasFiltradas != null && !citasFiltradas.isEmpty()) {
                     listaCitasDelDia.addAll(citasFiltradas);
                     Collections.sort(listaCitasDelDia);
-                    llenarTabla(listaCitasDelDia);
+                    llenarListaTarjetas(listaCitasDelDia);
                 } else {
-                    limpiarTablaDeDatos();
+                    limpiarListaDeDatos();
                     Toast.makeText(getContext(), "No hay citas programadas para este día", Toast.LENGTH_SHORT).show();
                 }
             });
         });
     }
 
-    private void llenarTabla(ArrayList<Cita> citas) {
-        limpiarTablaDeDatos();
+    private void llenarListaTarjetas(ArrayList<Cita> citas) {
+        limpiarListaDeDatos();
+        if (containerCitasCalendario == null) return;
+
+        LayoutInflater inflater = LayoutInflater.from(getContext());
 
         for (Cita cita : citas) {
-            TableRow fila = new TableRow(getContext());
-            fila.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
-            fila.setPadding(8, 16, 8, 16);
+            View cardCita = inflater.inflate(R.layout.item_cita_calendario, containerCitasCalendario, false);
 
-            TextView tvHora = new TextView(getContext());
+            TextView tvHora = cardCita.findViewById(R.id.tvCalCardHora);
+            TextView tvCliente = cardCita.findViewById(R.id.tvCalCardCliente);
+            TextView tvServicio = cardCita.findViewById(R.id.tvCalCardServicio);
+
             tvHora.setText(cita.getHora());
-            tvHora.setTextColor(Color.BLACK);
 
-            TextView tvCliente = new TextView(getContext());
             String nombreCompleto = cita.getUsuario().getNombre() + " " + cita.getUsuario().getApellidos();
             tvCliente.setText(nombreCompleto);
-            tvCliente.setTextColor(Color.BLACK);
 
-            TextView tvServicio = new TextView(getContext());
             tvServicio.setText(cita.getServicio().getNombreServicio());
-            tvServicio.setTextColor(Color.BLACK);
 
-            fila.addView(tvHora);
-            fila.addView(tvCliente);
-            fila.addView(tvServicio);
+            cardCita.setOnClickListener(v -> {
+                EditAppointmentFragment editFrag = new EditAppointmentFragment();
+                Bundle mochila = new Bundle();
+                mochila.putInt("id_cita", cita.getId());
+                editFrag.setArguments(mochila);
 
-            tableCitas.addView(fila);
+                if (getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, editFrag)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            });
+
+            containerCitasCalendario.addView(cardCita);
         }
     }
 
-    private void limpiarTablaDeDatos() {
-        int totalFilas = tableCitas.getChildCount();
-        if (totalFilas > 1) {
-            tableCitas.removeViews(1, totalFilas - 1);
+    private void limpiarListaDeDatos() {
+        if (containerCitasCalendario != null) {
+            containerCitasCalendario.removeAllViews();
         }
     }
 
