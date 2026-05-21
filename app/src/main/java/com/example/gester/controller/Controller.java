@@ -43,19 +43,6 @@ public class Controller {
         return d.todosLosUsuarios();
     }
 
-    public Cita getSingleCita(int id) {
-        if (d==null) return null;
-        ArrayList<Cita> citas = getCitas();
-        if (citas != null) {
-            for (Cita c : citas) {
-                if (c.getId() == id) {
-                    return c;
-                }
-            }
-        }
-        return null;
-    }
-
     public boolean crearCitaYUsuario(String nombre, String apellidos, String DNI,
                                      String fechaNacimiento, int idServicio, String fechaCita,
                                      String horaCita, String fechaCreacion) {
@@ -118,11 +105,6 @@ public class Controller {
             e.printStackTrace();
             return new ArrayList<>();
         }
-    }
-
-    public ArrayList<Cita> obtenerCitasProximosDias() {
-        if (d == null) return new ArrayList<>();
-        return d.obtenerCitasProximosDias();
     }
 
     public ArrayList<String> obtenerHorasOcupadasPorFecha(String fecha) {

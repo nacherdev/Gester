@@ -310,56 +310,6 @@ public class Dao {
         return lista;
     }
 
-    public ArrayList<Cita> obtenerCitasProximosDias() {
-        conectar();
-        ArrayList<Cita> lista = new ArrayList<>();
-        if (!conectar()) return lista;
-
-        String sql = "SELECT c.id AS id_cita, c.fecha, c.hora, c.estado, c.fecha_creacion, " +
-                "u.id AS id_usuario, u.nombre AS nombre_usuario, u.apellidos AS apellidos_usuario, u.DNI, u.fecha_nacimiento, " +
-                "s.id AS id_servicio, s.nombre_servicio, s.duracion, s.precio " +
-                "FROM citas c " +
-                "INNER JOIN usuarios u ON c.id_usuario = u.id " +
-                "INNER JOIN servicios s ON c.id_servicio = s.id " +
-                "WHERE c.fecha BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY)";
-
-        try (Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-
-            while (rs.next()) {
-                Usuario usuario = new Usuario(
-                        rs.getInt("id_usuario"),
-                        rs.getString("nombre_usuario"),
-                        rs.getString("apellidos_usuario"),
-                        rs.getString("DNI"),
-                        rs.getString("fecha_nacimiento")
-                );
-
-                Servicio servicio = new Servicio(
-                        rs.getInt("id_servicio"),
-                        rs.getString("nombre_servicio"),
-                        rs.getInt("duracion"),
-                        rs.getDouble("precio")
-                );
-
-                lista.add(new Cita(
-                        rs.getInt("id_cita"),
-                        usuario,
-                        servicio,
-                        rs.getString("fecha"),
-                        rs.getString("hora"),
-                        rs.getBoolean("estado"),
-                        rs.getString("fecha_creacion")
-                ));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            desconectar();
-        }
-        return lista;
-    }
-
     public ArrayList<String> obtenerHorasOcupadasPorFecha(String fecha) {
         conectar();
         ArrayList<String> horasOcupadas = new ArrayList<>();
