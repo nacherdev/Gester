@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,21 +32,39 @@ public class NotificationsFragment extends Fragment {
     private NotificacionesAdapter adapter;
     private Controller controller;
     private ArrayList<Notificacion> listaNotificaciones;
+    private Button btn_eliminar_todo;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_notifications, container, false);
+        Executor executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
 
         rvNotificaciones = root.findViewById(R.id.rvNotificaciones);
         tvEstadoCargando = root.findViewById(R.id.tvEstadoCargando);
         rvNotificaciones.setLayoutManager(new LinearLayoutManager(getContext()));
+        btn_eliminar_todo = root.findViewById(R.id.btn_eliminar_todo);
 
         controller = Controller.getInstancia();
         listaNotificaciones = new ArrayList<>();
 
         configurarGestoDeslizar();
         cargarBandejaNotificaciones();
+
+        btn_eliminar_todo.setOnClickListener(v -> {
+            executor.execute(() -> {
+                boolean exito = controller.eliminarTodasLasNotificacion();
+                handler.post(() -> {
+                    if (exito) {
+                        adapter.eliminarTodo();
+                        Toast.makeText(getContext(), "Notificaciones borradas", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Error al borrar las notificaciones", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
+        });
 
         return root;
     }
@@ -68,6 +87,10 @@ public class NotificationsFragment extends Fragment {
                 }
                 if (tvEstadoCargando != null) {
                     tvEstadoCargando.setVisibility(View.GONE);
+                    if (listaNotificaciones.isEmpty()) {
+                        tvEstadoCargando.setText("No hay notificaciones...");
+                        tvEstadoCargando.setVisibility(View.VISIBLE);
+                    }
                 }
                 if (alertas != null) {
                     listaNotificaciones.clear();
@@ -75,6 +98,7 @@ public class NotificationsFragment extends Fragment {
                     adapter = new NotificacionesAdapter(listaNotificaciones);
                     rvNotificaciones.setAdapter(adapter);
                 }
+
             });
         });
     }
