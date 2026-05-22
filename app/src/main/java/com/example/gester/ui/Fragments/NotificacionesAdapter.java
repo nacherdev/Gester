@@ -47,6 +47,11 @@ public class NotificacionesAdapter extends RecyclerView.Adapter<NotificacionesAd
         notifyItemRemoved(posicion);
     }
 
+    public void eliminarTodo() {
+        lista.clear();
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitulo, tvMensaje, tvFecha;
 
