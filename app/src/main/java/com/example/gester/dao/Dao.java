@@ -353,6 +353,19 @@ public class Dao {
         }
     }
 
+    public boolean eliminarTodasLasNotificacion() {
+        String sql = "TRUNCATE TABLE notificaciones";
+        try (Connection con = conectar();
+            PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+            if (ps == null) return false;
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
     public void verificarCitasProximas() {
         String sqlInsert = "INSERT INTO notificaciones (titulo, mensaje) " +
                 "SELECT 'Cita Próxima', CONCAT('Recordatorio: El cliente ', u.nombre, ' tiene una cita mañana a las ', SUBSTRING(c.hora, 1, 5)) " +
