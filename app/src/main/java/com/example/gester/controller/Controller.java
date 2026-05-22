@@ -6,12 +6,13 @@ import com.example.gester.dao.models.Notificacion;
 import com.example.gester.dao.models.Servicio;
 import com.example.gester.dao.models.Usuario;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 
 public class Controller {
 
     private static Controller instancia;
-    private Dao d = null;
+    private volatile Dao d = null;
 
     private Controller() { }
 
@@ -112,6 +113,7 @@ public class Controller {
     }
 
     public boolean registrarNotificacion(String titulo, String mensaje) {
+
         if (d == null) return false;
         return d.registrarNotificacion(titulo, mensaje);
     }
@@ -124,6 +126,11 @@ public class Controller {
     public boolean eliminarNotificacion(int id) {
         if (d == null) return false;
         return d.eliminarNotificacion(id);
+    }
+
+    public boolean eliminarTodasLasNotificacion() {
+        if (d == null) return false;
+        return d.eliminarTodasLasNotificacion();
     }
 
     public void verificarCitasProximas() {
