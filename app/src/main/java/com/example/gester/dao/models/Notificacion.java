@@ -44,4 +44,14 @@ public class Notificacion {
     public void setFechaEnvio(String fechaEnvio) {
         this.fechaEnvio = fechaEnvio;
     }
+
+    @Override
+    public String toString() {
+        return "Notificacion{" +
+                "id=" + id +
+                ", titulo='" + titulo + '\'' +
+                ", mensaje='" + mensaje + '\'' +
+                ", fechaEnvio='" + fechaEnvio + '\'' +
+                '}';
+    }
 }
