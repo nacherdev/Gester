@@ -266,7 +266,12 @@ public class AddFragment extends Fragment {
                 }
                 if (exito) {
                     Toast.makeText(getContext(), "Cita registrada con éxito", Toast.LENGTH_SHORT).show();
-                    NotificationCreator.enviar(getContext(), "Agendado con éxito", "Se ha creado la cita para el dia "+fechaFinalMsql +" a las "+horaSeleccionada);
+                    String titulo = "Agendado con éxito";
+                    String mensaje = "Se ha creado la cita de "+nombre+" para el dia "+fechaFinalMsql +" a las "+horaSeleccionada;
+                    NotificationCreator.enviar(getContext(), titulo, mensaje);
+                    executor.execute(() -> {
+                        controller.registrarNotificacion(titulo, mensaje);
+                    });
                     limpiarFormulario();
                 } else {
                     Toast.makeText(getContext(), "Error: La cita ya existe o no se pudo registrar", Toast.LENGTH_SHORT).show();
