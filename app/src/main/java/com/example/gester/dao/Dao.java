@@ -15,7 +15,6 @@ import java.util.ArrayList;
 
 public class Dao {
 
-    private Connection con = null;
     private String dbName;
     private String dbUser;
     private String dbPass;
@@ -33,41 +32,20 @@ public class Dao {
     public String getDbPass() { return dbPass; }
     public void setDbPass(String dbPass) { this.dbPass = dbPass; }
 
-    public boolean conectar() {
+    public Connection conectar() {
         try {
-            if (con != null && !con.isClosed()) {
-                return true;
-            }
             Class.forName("com.mysql.jdbc.Driver");
-
             String url = "jdbc:mysql://nacherdev.es:3306/" + dbName
-                    + "?connectTimeout=5000&socketTimeout=5000&autoReconnect=true";
-
-            con = DriverManager.getConnection(url, dbUser, dbPass);
+                    + "?connectTimeout=5000&socketTimeout=5000&autoReconnect=true&useSSL=false";
+            return DriverManager.getConnection(url, dbUser, dbPass);
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
-        return true;
-    }
-
-    private boolean desconectar() {
-        if (con != null) {
-            try {
-                con.close();
-                return true;
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return false;
     }
 
     public ArrayList<Cita> todasLasCitas() {
-        conectar();
         ArrayList<Cita> listaCitas = new ArrayList<>();
-        if (!conectar()) return listaCitas;
-
         String sql = "SELECT c.*, " +
                 "u.nombre, u.apellidos, u.DNI, u.fecha_nacimiento, " +
                 "s.nombre_servicio, s.duracion, s.precio " +
@@ -75,8 +53,11 @@ public class Dao {
                 "INNER JOIN usuarios u ON c.id_usuario = u.id " +
                 "INNER JOIN servicios s ON c.id_servicio = s.id";
 
-        try (Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+        try (Connection con = conectar();
+             Statement st = con != null ? con.createStatement() : null;
+             ResultSet rs = st != null ? st.executeQuery(sql) : null) {
+
+            if (rs == null) return listaCitas;
 
             while (rs.next()) {
                 Usuario u = new Usuario(
@@ -106,21 +87,21 @@ public class Dao {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            desconectar();
         }
         return listaCitas;
     }
 
     public ArrayList<Usuario> todosLosUsuarios() {
-        conectar();
         ArrayList<Usuario> listaUsuarios = new ArrayList<>();
-        if (!conectar()) return listaUsuarios;
-
         String sql = "SELECT * FROM usuarios";
 
-        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
-            while ( rs.next() ) {
+        try (Connection con = conectar();
+             Statement st = con != null ? con.createStatement() : null;
+             ResultSet rs = st != null ? st.executeQuery(sql) : null) {
+
+            if (rs == null) return listaUsuarios;
+
+            while (rs.next()) {
                 listaUsuarios.add(new Usuario(
                         rs.getInt("id"),
                         rs.getString("nombre"),
@@ -131,19 +112,20 @@ public class Dao {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            desconectar();
         }
         return listaUsuarios;
     }
 
     public ArrayList<Servicio> todosLosServicios() {
         ArrayList<Servicio> listaServicios = new ArrayList<>();
-        if (!conectar()) return listaServicios;
-
         String sql = "SELECT * FROM servicios";
 
-        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+        try (Connection con = conectar();
+             Statement st = con != null ? con.createStatement() : null;
+             ResultSet rs = st != null ? st.executeQuery(sql) : null) {
+
+            if (rs == null) return listaServicios;
+
             while (rs.next()) {
                 listaServicios.add(new Servicio(
                         rs.getInt("id"),
@@ -154,12 +136,6 @@ public class Dao {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (con != null && !con.isClosed()) con.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         return listaServicios;
     }
@@ -168,11 +144,14 @@ public class Dao {
         if (dni != null) {
             dni = dni.trim();
         }
-        conectar();
         String sql = "SELECT id FROM usuarios WHERE DNI = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql);) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+
+            if (ps == null) return -1;
             ps.setString(1, dni);
-            try (ResultSet rs = ps.executeQuery();) {
+
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt("id");
                 } else {
@@ -182,17 +161,16 @@ public class Dao {
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
-        } finally {
-            desconectar();
         }
-
     }
 
     public boolean crearUsuario(String nombre, String apellidos, String DNI, String fechaNacimiento) {
-        conectar();
         String sqlInsert = "INSERT INTO usuarios (nombre, apellidos ,DNI, fecha_nacimiento) VALUES (?, ?, ?, ?)";
 
-        try (PreparedStatement psIn = con.prepareStatement(sqlInsert);) {
+        try (Connection con = conectar();
+             PreparedStatement psIn = con != null ? con.prepareStatement(sqlInsert) : null) {
+
+            if (psIn == null) return false;
             psIn.setString(1, nombre);
             psIn.setString(2, apellidos);
             psIn.setString(3, DNI);
@@ -205,11 +183,12 @@ public class Dao {
     }
 
     public int buscarIdCita(int idUsuario, String fecha, String hora) {
-        conectar();
         String sql = "SELECT id FROM citas WHERE id_usuario = ? AND fecha = ? AND hora = ?";
 
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
 
+            if (ps == null) return -1;
             ps.setInt(1, idUsuario);
             ps.setString(2, fecha);
             ps.setString(3, hora);
@@ -221,44 +200,35 @@ public class Dao {
                     return -1;
                 }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
-        } finally {
-            desconectar();
         }
     }
 
     public boolean crearCita(int idUsuario, int idServicio, String fecha, String hora, String fechaCreacion) {
-        conectar();
-
         String sqlInsert = "INSERT INTO citas (id_usuario, id_servicio, fecha, hora, fecha_creacion) VALUES (?, ?, ?, ?, ?)";
 
-        try (PreparedStatement psIn = con.prepareStatement(sqlInsert)) {
+        try (Connection con = conectar();
+             PreparedStatement psIn = con != null ? con.prepareStatement(sqlInsert) : null) {
+
+            if (psIn == null) return false;
             psIn.setInt(1, idUsuario);
             psIn.setInt(2, idServicio);
             psIn.setString(3, fecha);
             psIn.setString(4, hora);
             psIn.setString(5, fechaCreacion);
 
-            int filasAfectadas = psIn.executeUpdate();
-
-            return filasAfectadas > 0;
+            return psIn.executeUpdate() > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            desconectar();
         }
     }
 
     public ArrayList<Cita> obtenerCitasPorFecha(String fecha) {
-        conectar();
         ArrayList<Cita> lista = new ArrayList<>();
-        if (!conectar()) return lista;
-
         String sql = "SELECT c.id AS id_cita, c.fecha, c.hora, c.estado, c.fecha_creacion, " +
                 "u.id AS id_usuario, u.nombre AS nombre_usuario, u.apellidos AS apellidos_usuario, u.DNI, u.fecha_nacimiento, " +
                 "s.id AS id_servicio, s.nombre_servicio, s.duracion, s.precio " +
@@ -267,12 +237,14 @@ public class Dao {
                 "INNER JOIN servicios s ON c.id_servicio = s.id " +
                 "WHERE c.fecha = ?";
 
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+
+            if (ps == null) return lista;
             ps.setString(1, fecha);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-
                     Usuario usuario = new Usuario(
                             rs.getInt("id_usuario"),
                             rs.getString("nombre_usuario"),
@@ -303,22 +275,20 @@ public class Dao {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            desconectar();
         }
-
         return lista;
     }
 
     public ArrayList<String> obtenerHorasOcupadasPorFecha(String fecha) {
-        conectar();
         ArrayList<String> horasOcupadas = new ArrayList<>();
-        if (!conectar()) return horasOcupadas;
-
         String sql = "SELECT hora AS hora FROM citas WHERE fecha = ? AND estado = 1";
 
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+
+            if (ps == null) return horasOcupadas;
             ps.setString(1, fecha);
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     horasOcupadas.add(rs.getString("hora"));
@@ -326,32 +296,35 @@ public class Dao {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            desconectar();
         }
         return horasOcupadas;
     }
 
     public boolean registrarNotificacion(String titulo, String mensaje) {
-        if (!conectar()) return false;
         String sql = "INSERT INTO notificaciones (titulo, mensaje) VALUES (?, ?)";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+
+            if (ps == null) return false;
             ps.setString(1, titulo);
             ps.setString(2, mensaje);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            desconectar();
         }
     }
 
     public ArrayList<Notificacion> obtenerNotificaciones() {
         ArrayList<Notificacion> lista = new ArrayList<>();
-        if (!conectar()) return lista;
         String sql = "SELECT id, titulo, mensaje, DATE_FORMAT(fecha_envio, '%Y-%m-%d %H:%i') AS fecha FROM notificaciones ORDER BY fecha_envio DESC";
-        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+
+        try (Connection con = conectar();
+             Statement st = con != null ? con.createStatement() : null;
+             ResultSet rs = st != null ? st.executeQuery(sql) : null) {
+
+            if (rs == null) return lista;
+
             while (rs.next()) {
                 lista.add(new Notificacion(
                         rs.getInt("id"),
@@ -362,28 +335,25 @@ public class Dao {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            desconectar();
         }
         return lista;
     }
 
     public boolean eliminarNotificacion(int id) {
-        if (!conectar()) return false;
         String sql = "DELETE FROM notificaciones WHERE id = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+
+            if (ps == null) return false;
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            desconectar();
         }
     }
 
     public void verificarCitasProximas() {
-        if (!conectar()) return;
         String sqlInsert = "INSERT INTO notificaciones (titulo, mensaje) " +
                 "SELECT 'Cita Próxima', CONCAT('Recordatorio: El cliente ', u.nombre, ' tiene una cita mañana a las ', SUBSTRING(c.hora, 1, 5)) " +
                 "FROM citas c " +
@@ -396,17 +366,18 @@ public class Dao {
                 "    AND n.mensaje LIKE CONCAT('%', SUBSTRING(c.hora, 1, 5), '%') " +
                 "    AND DATE(n.fecha_envio) = CURDATE() " +
                 ")";
-        try (Statement st = con.createStatement()) {
-            st.executeUpdate(sqlInsert);
+        try (Connection con = conectar();
+             Statement st = con != null ? con.createStatement() : null) {
+
+            if (st != null) {
+                st.executeUpdate(sqlInsert);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            desconectar();
         }
     }
 
     public Cita obtenerCitaPorId(int idCita) {
-        if (!conectar()) return null;
         String sql = "SELECT c.id, c.id_usuario, c.id_servicio, c.fecha, c.hora, c.estado, c.fecha_creacion, " +
                 "u.nombre AS usr_nombre, u.apellidos AS usr_apellidos, u.DNI AS usr_dni, u.fecha_nacimiento AS usr_nacimiento, " +
                 "s.nombre_servicio AS srv_nombre, s.duracion AS srv_duracion, s.precio AS srv_precio " +
@@ -414,8 +385,12 @@ public class Dao {
                 "JOIN usuarios u ON c.id_usuario = u.id " +
                 "JOIN servicios s ON c.id_servicio = s.id " +
                 "WHERE c.id = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+
+            if (ps == null) return null;
             ps.setInt(1, idCita);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Usuario usuario = new Usuario(
@@ -444,16 +419,16 @@ public class Dao {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            desconectar();
         }
         return null;
     }
 
     public boolean actualizarCita(int idCita, int idServicio, String fecha, String hora) {
-        if (!conectar()) return false;
         String sql = "UPDATE citas SET id_servicio = ?, fecha = ?, hora = ? WHERE id = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+
+            if (ps == null) return false;
             ps.setInt(1, idServicio);
             ps.setString(2, fecha);
             ps.setString(3, hora);
@@ -462,22 +437,20 @@ public class Dao {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            desconectar();
         }
     }
 
     public boolean eliminarCita(int idCita) {
-        if (!conectar()) return false;
         String sql = "DELETE FROM citas WHERE id = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+
+            if (ps == null) return false;
             ps.setInt(1, idCita);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            desconectar();
         }
     }
 
@@ -485,13 +458,12 @@ public class Dao {
         if (dni != null) {
             dni = dni.trim().toUpperCase();
         }
-        conectar();
-
-        if (!conectar()) return null;
-
         String sql = "SELECT id, nombre, apellidos, DNI, fecha_nacimiento FROM usuarios WHERE DNI = ?";
 
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = conectar();
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+
+            if (ps == null) return null;
             ps.setString(1, dni);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -521,8 +493,6 @@ public class Dao {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            desconectar();
         }
         return null;
     }
