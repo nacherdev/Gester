@@ -3,9 +3,10 @@ package com.example.gester.ui;
 import android.os.Bundle;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.fragment.app.Fragment;
 
 import com.example.gester.ui.Fragments.HomeFragment;
 import com.example.gester.ui.Fragments.AddFragment;
@@ -18,49 +19,52 @@ import com.example.gester.R;
 
 public class HomeActivity extends AppCompatActivity {
 
+    private long lastClickTime = 0;
+    private static final long CLICK_DELAY = 500;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.home);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_home), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        hideSystemUI();
 
         BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
-
         String nombre = getIntent().getStringExtra("nombre");
 
         if (savedInstanceState == null) {
             Bundle mochila = new Bundle();
             mochila.putString("nombre", nombre);
-
             HomeFragment primerFragment = new HomeFragment();
             primerFragment.setArguments(mochila);
-
-            getSupportFragmentManager().beginTransaction().replace(
-                    R.id.fragment_container, primerFragment
-            ).commit();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, primerFragment)
+                    .commit();
         }
 
         bottomNavigation.setOnItemSelectedListener(item -> {
-            androidx.fragment.app.Fragment selectedFragment = null;
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_DELAY) {
+                return false;
+            }
+            lastClickTime = currentTime;
+
+            if (getSupportFragmentManager().isStateSaved()) {
+                return false;
+            }
+
+            Fragment selectedFragment = null;
             int id = item.getItemId();
 
             if (id == R.id.navigation_home) {
                 HomeFragment homeFrag = new HomeFragment();
-                Bundle mochilaReutilizable = new Bundle();
-                mochilaReutilizable.putString("nombre", nombre);
-                homeFrag.setArguments(mochilaReutilizable);
+                Bundle mochila = new Bundle();
+                mochila.putString("nombre", nombre);
+                homeFrag.setArguments(mochila);
                 selectedFragment = homeFrag;
             } else if (id == R.id.navigation_notifications) {
                 NotificationsFragment notificationFragment = new NotificationsFragment();
-                Bundle mochila = new Bundle();
-                mochila.putString("texto", "Hola esto es un mensaje");
-                notificationFragment.setArguments(mochila);
                 selectedFragment = notificationFragment;
             } else if (id == R.id.navigation_add) {
                 selectedFragment = new AddFragment();
@@ -73,11 +77,16 @@ public class HomeActivity extends AppCompatActivity {
             if (selectedFragment != null) {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, selectedFragment)
-                        .commit();
+                        .commitAllowingStateLoss();
                 return true;
             }
             return false;
         });
+    }
 
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
     }
 }
