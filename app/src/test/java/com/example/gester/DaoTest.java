@@ -32,4 +32,11 @@ public class DaoTest {
 
         System.out.println(lista);
     }
+
+    @Test
+    public void crerNotificacion() {
+        Dao dao = new Dao("gester", "admin_gester", "IasenCopysen67");
+        dao.registrarNotificacion("Hola", "Patata patatil");
+
+    }
 }
