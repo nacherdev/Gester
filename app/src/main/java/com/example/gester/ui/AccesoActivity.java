@@ -1,5 +1,6 @@
 package com.example.gester.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,7 +11,10 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+
 import com.example.gester.R;
 import com.example.gester.controller.Controller;
 import java.io.BufferedReader;
@@ -26,11 +30,14 @@ public class AccesoActivity extends AppCompatActivity {
 
     private Button btnIniciarSesion, btnRegistrarse;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.acceso);
+
+        hideSystemUI();
 
         btnIniciarSesion = findViewById(R.id.btn_login);
         btnRegistrarse = findViewById(R.id.btn_signup);
@@ -101,5 +108,11 @@ public class AccesoActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
     }
 }

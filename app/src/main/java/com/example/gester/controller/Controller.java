@@ -15,7 +15,6 @@ public class Controller {
 
     private Controller() { }
 
-
     public static synchronized Controller getInstancia() {
         if (instancia == null) {
             instancia = new Controller();
@@ -25,7 +24,7 @@ public class Controller {
 
     public boolean conectarBBDD(String nombrebd, String usuario, String contrasena){
         d = new Dao(nombrebd, usuario, contrasena);
-        return d.conectar();
+        return d.conectar() != null;
     }
 
     public ArrayList<Cita> getCitas(){
@@ -174,5 +173,4 @@ public class Controller {
         }
         return d.buscarPorDni(dni);
     }
-
 }
