@@ -79,9 +79,9 @@ public class AccesoActivity extends AppCompatActivity {
             return;
         }
 
-        final String dbNombre = credenciales[0];
-        final String dbUsuario = credenciales[1];
-        final String dbPassword = credenciales[2];
+        String dbNombre = credenciales[0];
+        String dbUsuario = credenciales[1];
+        String dbPassword = credenciales[2];
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -95,7 +95,7 @@ public class AccesoActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            final boolean finalConectado = conectado;
+            boolean finalConectado = conectado;
             handler.post(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 if (finalConectado) {

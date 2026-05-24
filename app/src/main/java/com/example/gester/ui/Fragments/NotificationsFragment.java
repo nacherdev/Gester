@@ -58,6 +58,7 @@ public class NotificationsFragment extends Fragment {
                 handler.post(() -> {
                     if (exito) {
                         adapter.eliminarTodo();
+                        controller.eliminarTodasLasNotificacion();
                         Toast.makeText(getContext(), "Notificaciones borradas", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getContext(), "Error al borrar las notificaciones", Toast.LENGTH_SHORT).show();
@@ -87,10 +88,6 @@ public class NotificationsFragment extends Fragment {
                 }
                 if (tvEstadoCargando != null) {
                     tvEstadoCargando.setVisibility(View.GONE);
-                    if (listaNotificaciones.isEmpty()) {
-                        tvEstadoCargando.setText("No hay notificaciones...");
-                        tvEstadoCargando.setVisibility(View.VISIBLE);
-                    }
                 }
                 if (alertas != null) {
                     listaNotificaciones.clear();

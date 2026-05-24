@@ -357,8 +357,11 @@ public class Dao {
         String sql = "TRUNCATE TABLE notificaciones";
         try (Connection con = conectar();
             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
-            if (ps == null) return false;
-            return ps.executeUpdate() > 0;
+            if (ps != null) {
+                ps.executeUpdate();
+                return true;
+            } else return false;
+
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

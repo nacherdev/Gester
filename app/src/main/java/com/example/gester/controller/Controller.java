@@ -1,13 +1,17 @@
 package com.example.gester.controller;
 
+import android.widget.ArrayAdapter;
+
 import com.example.gester.dao.Dao;
 import com.example.gester.dao.models.Cita;
 import com.example.gester.dao.models.Notificacion;
 import com.example.gester.dao.models.Servicio;
 import com.example.gester.dao.models.Usuario;
 
+import java.sql.Connection;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Controller {
 
@@ -156,21 +160,11 @@ public class Controller {
 
     public ArrayList<String> obtenerHorasDisponibles(String fecha) {
         ArrayList<String> ocupadas = obtenerHorasOcupadasPorFecha(fecha);
-        ArrayList<String> limpiasOcupadas = new ArrayList<>();
         ArrayList<String> disponibles = new ArrayList<>();
 
-        for (String h : ocupadas) {
-            if (h != null && h.length() >= 5) {
-                limpiasOcupadas.add(h.substring(0, 5));
-            }
-        }
+        ArrayList<String> listaDisponibles = new ArrayList<>(List.of("09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"));
+        listaDisponibles.removeAll(ocupadas);
 
-        String[] jornada = {"09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"};
-        for (String h : jornada) {
-            if (!limpiasOcupadas.contains(h)) {
-                disponibles.add(h);
-            }
-        }
         return disponibles;
     }
 
