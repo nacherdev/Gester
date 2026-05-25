@@ -43,7 +43,7 @@ com.example.gester
 
 Try-with-resources).
 
-├── models # Clases POJO (Usuario, Servicio, Cita).
+├── models # Clases POJO (Usuario, Servicio, Cita, Notificaciones).
 
 └── ui # Actividades y fragmentos de la interfaz de usuario.
 
@@ -66,3 +66,15 @@ JOIN servicios s ON c.id_servicio = s.id;
 ```
 
 ---
+
+## 🛠️ Tecnologías Utilizadas
+
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) ![Android Studio](https://img.shields.io/badge/Android%20Studio-3DDC84?style=for-the-badge&logo=android-studio&logoColor=white) ![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white) ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
+
+---
+
+## 📄 Licencia
+
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=white)
+
+Este proyecto está bajo la Licencia MIT. Para más detalles, consulta el archivo [LICENSE](LICENSE) para ver el texto completo.
