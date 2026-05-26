@@ -621,7 +621,7 @@ public class Dao {
     }
 
     public boolean eliminarCita(int idCita) {
-        String sql = "UPDATE citas SET estado = 1 WHERE id = ?";
+        String sql = "UPDATE citas SET estado = 0 WHERE id = ?";
         try (Connection con = conectar();
              PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
 
