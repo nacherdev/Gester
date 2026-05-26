@@ -42,7 +42,7 @@ public class HomeFragment extends Fragment {
 
         if (getArguments() != null) {
             String nombre = getArguments().getString("nombre", "Usuario");
-            tvBienvenidaHome.setText("¡Bienvenido, " + nombre.toUpperCase() + "!");
+            tvBienvenidaHome.setText("¡Bienvenido, " + nombre.toUpperCase().replace("_", " ") + "!");
         }
 
         cargarDatosHome();
