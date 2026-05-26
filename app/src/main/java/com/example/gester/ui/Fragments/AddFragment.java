@@ -221,6 +221,7 @@ public class AddFragment extends Fragment {
     }
 
     private void procesarGuardadoCita() {
+        String fomatoDni = "/^[XYZ\\d]\\d{7}[A-Z]$/i";
         String nombre = etNombre.getText().toString().trim();
         String apellidos = etApellidos.getText().toString().trim();
         String dni = etDni.getText().toString().trim();
@@ -228,6 +229,11 @@ public class AddFragment extends Fragment {
 
         if (nombre.isEmpty() || apellidos.isEmpty() || dni.isEmpty() || fechaNac.isEmpty() || fechaFinalMsql.isEmpty()) {
             Toast.makeText(getContext(), "Por favor, rellena todos los campos obligatorios", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!dni.matches(fomatoDni)) {
+            Toast.makeText(getContext(), "Formato de dni, inválido, ponga uno válido", Toast.LENGTH_SHORT).show();
             return;
         }
 
