@@ -301,15 +301,24 @@ public class AddFragment extends Fragment {
 
     private ArrayList<String> generarHorario() {
         ArrayList<String> horario = new ArrayList<>();
-        horario.add("09:00"); horario.add("09:30");
-        horario.add("10:00"); horario.add("10:30");
-        horario.add("11:00"); horario.add("11:30");
-        horario.add("12:00"); horario.add("12:30");
-        horario.add("13:00"); horario.add("13:30");
-        horario.add("16:00"); horario.add("16:30");
-        horario.add("17:00"); horario.add("17:30");
-        horario.add("18:00"); horario.add("18:30");
-        horario.add("19:00"); horario.add("19:30");
+        horario.add("09:00");
+        horario.add("09:30");
+        horario.add("10:00");
+        horario.add("10:30");
+        horario.add("11:00");
+        horario.add("11:30");
+        horario.add("12:00");
+        horario.add("12:30");
+        horario.add("13:00");
+        horario.add("13:30");
+        horario.add("16:00");
+        horario.add("16:30");
+        horario.add("17:00");
+        horario.add("17:30");
+        horario.add("18:00");
+        horario.add("18:30");
+        horario.add("19:00");
+        horario.add("19:30");
         horario.add("20:00");
         return horario;
     }
