@@ -45,6 +45,10 @@ public class Controller {
         return d.todasLasCitas();
     }
 
+    public ArrayList<Cita> getCitasActivas(){
+        if (d == null) return new ArrayList<>();
+        return d.getCitasActivas();
+    }
     public ArrayList<Servicio> getServicios(){
         if (d == null) return new ArrayList<>();
         return d.todosLosServicios();
