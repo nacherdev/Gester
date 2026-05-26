@@ -17,6 +17,8 @@ import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.gester.R;
 import com.example.gester.controller.Controller;
+import com.example.gester.ui.Fragments.ConfirmacionDialog;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,7 +89,7 @@ public class AccesoActivity extends AppCompatActivity {
         Handler handler = new Handler(Looper.getMainLooper());
 
         executor.execute(() -> {
-            boolean conectado = false;
+            int conectado = 0;
             try {
                 Controller c = Controller.getInstancia();
                 conectado = c.conectarBBDD(dbNombre, dbUsuario, dbPassword);
@@ -95,16 +97,54 @@ public class AccesoActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            boolean finalConectado = conectado;
+            int finalConectado = conectado;
             handler.post(() -> {
                 if (isFinishing() || isDestroyed()) return;
-                if (finalConectado) {
-                    Intent intent = new Intent(AccesoActivity.this, HomeActivity.class);
-                    intent.putExtra("nombre", dbNombre);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Toast.makeText(AccesoActivity.this, "Error de conexión. Verifica los datos.", Toast.LENGTH_LONG).show();
+                if (finalConectado == 0) {
+
+                } else if (finalConectado == -1){
+                }
+
+                switch (finalConectado) {
+                    case 0:
+                        Intent intent = new Intent(AccesoActivity.this, HomeActivity.class);
+                        intent.putExtra("nombre", dbNombre);
+                        startActivity(intent);
+                        finish();
+                        break;
+                    case -1:
+                        Toast.makeText(AccesoActivity.this, "Error: El servidor no responde", Toast.LENGTH_LONG).show();
+                        break;
+                    case -2:
+                        Toast.makeText(AccesoActivity.this, "Error: Credenciales incorrectas", Toast.LENGTH_LONG).show();
+                        break;
+                    case -3:
+                        ConfirmacionDialog dialogo = new ConfirmacionDialog();
+                        dialogo.setListener(aceptado -> {
+                            if (aceptado) {
+                                Toast.makeText(AccesoActivity.this, "Creando base de datos...", Toast.LENGTH_LONG).show();
+
+                                ExecutorService executorCrear = Executors.newSingleThreadExecutor();
+                                executorCrear.execute(() -> {
+                                    Controller controller = Controller.getInstancia();
+                                    boolean exito = controller.crearBaseDeDatos(dbNombre, dbUsuario, dbPassword);
+
+                                    handler.post(() -> {
+                                        if (exito) {
+                                            Toast.makeText(AccesoActivity.this, "Se ha creado la base de datos con éxito", Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Toast.makeText(AccesoActivity.this, "Ha habido un problema al crear la base de datos", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                        dialogo.show(getSupportFragmentManager(), "ConfirmacionDialog");
+                        break;
+                    case -4:
+                        Toast.makeText(AccesoActivity.this, "Error: Contacta con administrador", Toast.LENGTH_LONG).show();
+
+                        break;
                 }
             });
         });
