@@ -18,7 +18,7 @@ import java.io.OutputStreamWriter;
 
 public class RegistrarActivity extends AppCompatActivity {
 
-    private EditText etDb, etUser, etPass;
+    private EditText etDb, etPass;
     private Button btnSubmit, btnVolver;
 
     @Override
@@ -29,17 +29,16 @@ public class RegistrarActivity extends AppCompatActivity {
         hideSystemUI();
 
         etDb = findViewById(R.id.et_register_db_name);
-        etUser = findViewById(R.id.et_register_user);
         etPass = findViewById(R.id.et_register_password);
         btnSubmit = findViewById(R.id.btn_register_submit);
         btnVolver = findViewById(R.id.btn_volver);
 
         btnSubmit.setOnClickListener(v -> {
-            String db = etDb.getText().toString().trim();
-            String user = etUser.getText().toString().trim();
+            String db = etDb.getText().toString().trim().replace(" ", "_").toLowerCase();
+            String user = "admin_"+db.toLowerCase();
             String pass = etPass.getText().toString().trim();
 
-            if (db.isEmpty() || user.isEmpty() || pass.isEmpty()) {
+            if (db.isEmpty() || pass.isEmpty()) {
                 Toast.makeText(this, "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show();
             } else {
                 guardarCredenciales(db, user, pass);
@@ -60,7 +59,7 @@ public class RegistrarActivity extends AppCompatActivity {
              BufferedWriter writer = new BufferedWriter(osw)) {
 
             writer.write(contenido);
-            writer.flush();
+            writer.close();
 
             Toast.makeText(this, "Credenciales registradas", Toast.LENGTH_SHORT).show();
             finish();
