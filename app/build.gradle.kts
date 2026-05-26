@@ -1,5 +1,13 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
 android {
@@ -24,13 +32,26 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // Formato estricto para Kotlin DSL
+            buildConfigField("String", "DB_ADMIN_USER", "\"${localProperties.getProperty("DB_ADMIN_USER") ?: ""}\"")
+            buildConfigField("String", "DB_ADMIN_PASS", "\"${localProperties.getProperty("DB_ADMIN_PASS") ?: ""}\"")
+        }
+        getByName("debug") {
+            buildConfigField("String", "DB_ADMIN_USER", "\"${localProperties.getProperty("DB_ADMIN_USER") ?: ""}\"")
+            buildConfigField("String", "DB_ADMIN_PASS", "\"${localProperties.getProperty("DB_ADMIN_PASS") ?: ""}\"")
         }
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -47,6 +68,5 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
 
     implementation("mysql:mysql-connector-java:5.1.49")
-
     implementation("com.google.code.gson:gson:2.10.1")
 }
