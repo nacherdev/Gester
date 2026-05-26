@@ -27,9 +27,17 @@ public class Controller {
         return instancia;
     }
 
-    public boolean conectarBBDD(String nombrebd, String usuario, String contrasena){
-        d = new Dao(nombrebd, usuario, contrasena);
-        return d.conectar() != null;
+    public int conectarBBDD(String nombrebd, String usuario, String contrasena){
+        d = new Dao();
+        d.setDbName(nombrebd);
+        d.setDbUser(usuario);
+        d.setDbPass(contrasena);
+
+        return d.probarConexion();
+    }
+
+    public boolean crearBaseDeDatos(String dbName, String dbUser, String dbPass) {
+        return  Dao.crearBaseDeDatos(dbName, dbUser, dbPass);
     }
 
     public ArrayList<Cita> getCitas(){
@@ -160,12 +168,10 @@ public class Controller {
 
     public ArrayList<String> obtenerHorasDisponibles(String fecha) {
         ArrayList<String> ocupadas = obtenerHorasOcupadasPorFecha(fecha);
-        ArrayList<String> disponibles = new ArrayList<>();
-
         ArrayList<String> listaDisponibles = new ArrayList<>(List.of("09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"));
         listaDisponibles.removeAll(ocupadas);
 
-        return disponibles;
+        return listaDisponibles;
     }
 
     public Usuario obtenerUsuarioPorDni(String dni) {
