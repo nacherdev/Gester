@@ -66,7 +66,7 @@ public class HomeFragment extends Fragment {
         Handler handler = new Handler(Looper.getMainLooper());
 
         executor.execute(() -> {
-            ArrayList<Cita> proximas = controller.getCitas();
+            ArrayList<Cita> proximas = controller.getCitasActivas();
 
             handler.post(() -> {
                 if (isAdded() && proximas != null) {
