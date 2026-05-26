@@ -4,6 +4,7 @@ import com.example.gester.dao.models.Cita;
 import com.example.gester.dao.models.Servicio;
 import com.example.gester.dao.models.Usuario;
 import com.example.gester.dao.models.Notificacion;
+import com.example.gester.BuildConfig;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,6 +20,10 @@ public class Dao {
     private String dbUser;
     private String dbPass;
 
+    public Dao() {
+
+    }
+
     public Dao(String dbName, String dbUser, String dbPass) {
         this.dbName = dbName.trim();
         this.dbUser = dbUser.trim();
@@ -32,18 +37,129 @@ public class Dao {
     public String getDbPass() { return dbPass; }
     public void setDbPass(String dbPass) { this.dbPass = dbPass; }
 
-    public Connection conectar() {
+    public Connection conectar() throws SQLException {
+        String url = "jdbc:mysql://nacherdev.es:3306/" + dbName
+                + "?connectTimeout=5000&socketTimeout=5000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true";
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-            String url = "jdbc:mysql://nacherdev.es:3306/" + dbName
-                    + "?connectTimeout=5000&socketTimeout=5000&autoReconnect=true&useSSL=false";
             return DriverManager.getConnection(url, dbUser, dbPass);
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-            return null;
+        } catch (SQLException e) {
+            throw e;
         }
     }
 
+    public int existeBaseDeDatos(String name) {
+        String url = "jdbc:mysql://nacherdev.es:3306/?connectTimeout=5000&socketTimeout=5000&useSSL=false&allowPublicKeyRetrieval=true";
+
+        try (Connection c = DriverManager.getConnection(url, BuildConfig.DB_ADMIN_USER, BuildConfig.DB_ADMIN_PASS);
+             Statement stmt = c.createStatement()) {
+
+            try {
+                stmt.execute("USE " + name);
+                return 0;
+            } catch (SQLException e) {
+                int errorCode = e.getErrorCode();
+                String sqlState = e.getSQLState();
+                if (errorCode == 1049 || "42000".equals(sqlState) || "3D000".equals(sqlState)) {
+                    return -3;
+                }
+                throw e;
+            }
+
+        } catch (SQLException e) {
+            String sqlState = e.getSQLState();
+
+            if (sqlState != null && sqlState.startsWith("08")) {
+                return -2;
+            } else {
+                return -4;
+            }
+        }
+    }
+
+    public int probarConexion() {
+        int res = existeBaseDeDatos(this.dbName);
+
+        if (res == -2) {
+            return -2;
+        }
+
+        if (res == -3) {
+            return -3;
+        }
+
+        try (Connection c = conectar()) {
+            return 0;
+        } catch (SQLException e) {
+            String sqlState = e.getSQLState();
+            System.out.println(sqlState);
+            if (sqlState != null && sqlState.startsWith("28")) {
+                return -1;
+            } else if (sqlState != null && sqlState.startsWith("08")) {
+                return -2;
+            } else {
+                return -4;
+            }
+        }
+    }
+
+    public static boolean crearBaseDeDatos(String dbName, String dbUser, String dbPass) {
+        String url = "jdbc:mysql://nacherdev.es:3306/?connectTimeout=5000&socketTimeout=5000&useSSL=false&allowPublicKeyRetrieval=true";
+        try (Connection c = DriverManager.getConnection(url, "usuario_creador", "KeriPayosen67");
+             Statement st = c.createStatement()) {
+
+            st.execute("DROP DATABASE IF EXISTS " + dbName);
+            st.execute("CREATE DATABASE " + dbName);
+
+            st.execute("DROP USER IF EXISTS '" + dbUser + "'@'%'");
+            st.execute("CREATE USER '" + dbUser + "'@'%' IDENTIFIED BY '" + dbPass + "'");
+
+            st.execute("GRANT ALL PRIVILEGES ON " + dbName + ".* TO '" + dbUser + "'@'%'");
+            st.execute("FLUSH PRIVILEGES");
+
+            String sqlUsuarios = "CREATE TABLE " + dbName + ".usuarios (\n" +
+                    "\tid int PRIMARY KEY auto_increment,\n" +
+                    "    nombre varchar(100) NOT NULL,\n" +
+                    "    apellidos varchar(255) NOT NULL,\n" +
+                    "    DNI varchar(9) NOT NULL,\n" +
+                    "    fecha_nacimiento varchar(100) NOT NULL\n" +
+                    ");";
+            st.execute(sqlUsuarios);
+
+            String sqlServicios = "CREATE TABLE " + dbName + ".servicios (\n" +
+                    "\tid int primary key auto_increment,\n" +
+                    "    nombre_servicio varchar(100) NOT NULL,\n" +
+                    "    duracion int NOT NULL,\n" +
+                    "    precio double(10,2) NOT NULL\n" +
+                    ");";
+            st.execute(sqlServicios);
+
+            String sqlCitas = "CREATE TABLE " + dbName + ".citas (\n" +
+                    "\tid int PRIMARY key auto_increment,\n" +
+                    "    id_usuario int NOT NULL,\n" +
+                    "    id_servicio int NOT NULL,\n" +
+                    "    fecha varchar(100) NOT NULL,\n" +
+                    "    hora varchar(100) not null,\n" +
+                    "    estado boolean default true,\n" +
+                    "    fecha_creacion varchar(100),\n" +
+                    "    constraint fk_usuario_cita FOREIGN KEY (id_usuario) REFERENCES " + dbName + ".usuarios(id),\n" +
+                    "    constraint fk_servicio_cita FOREIGN KEY (id_servicio) REFERENCES " + dbName + ".servicios(id)\n" +
+                    ");";
+            st.execute(sqlCitas);
+
+            String sqlNotificaciones = "CREATE TABLE " + dbName + ".notificaciones (\n" +
+                    "    id INT AUTO_INCREMENT PRIMARY KEY,\n" +
+                    "    titulo VARCHAR(100) NOT NULL,\n" +
+                    "    mensaje TEXT NOT NULL,\n" +
+                    "    fecha_envio DATETIME NOT NULL default current_timestamp\n" +
+                    ");";
+            st.execute(sqlNotificaciones);
+
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     public ArrayList<Cita> todasLasCitas() {
         ArrayList<Cita> listaCitas = new ArrayList<>();
         String sql = "SELECT c.*, " +
