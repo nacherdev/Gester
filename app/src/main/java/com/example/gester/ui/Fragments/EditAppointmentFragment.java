@@ -24,7 +24,7 @@ import com.example.gester.dao.models.Servicio;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class EditAppointmentFragment extends Fragment {
@@ -35,6 +35,9 @@ public class EditAppointmentFragment extends Fragment {
     private Button btnGuardar, btnEliminar;
     private Controller controller;
     private ArrayList<Servicio> listaServicios;
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Nullable
     @Override
@@ -69,14 +72,11 @@ public class EditAppointmentFragment extends Fragment {
     }
 
     private void inicializarDatos() {
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             listaServicios = controller.getServicios();
             Cita cita = controller.obtenerCitaPorId(idCita);
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (isAdded() && cita != null) {
                     tvCliente.setText(cita.getUsuario().getNombre() + " " + cita.getUsuario().getApellidos());
                     tvFecha.setText(cita.getFecha());
@@ -99,17 +99,14 @@ public class EditAppointmentFragment extends Fragment {
     }
 
     private void cargarHorasDisponibles(String fecha, String horaActualCita) {
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             ArrayList<String> horas = controller.obtenerHorasDisponibles(fecha);
-            if (!horas.contains(horaActualCita)) {
+            if (!horaActualCita.isEmpty() && !horas.contains(horaActualCita)) {
                 horas.add(horaActualCita);
             }
             horas.sort(String::compareTo);
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (isAdded()) {
                     ArrayAdapter<String> adapterHoras = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, horas);
                     adapterHoras.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -137,20 +134,22 @@ public class EditAppointmentFragment extends Fragment {
     }
 
     private void guardarCambios() {
+        if (spServicio.getSelectedItem() == null || spHora.getSelectedItem() == null) {
+            Toast.makeText(getContext(), "Faltan datos por seleccionar", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Servicio s = (Servicio) spServicio.getSelectedItem();
         String fecha = tvFecha.getText().toString();
         String hora = spHora.getSelectedItem().toString();
 
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             boolean ok = controller.actualizarCita(idCita, s.getId(), fecha, hora);
             if (ok) {
                 controller.registrarNotificacion("Cita Modificada", "Se ha actualizado la cita de " + tvCliente.getText().toString() + " para el " + fecha);
             }
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (isAdded()) {
                     if (ok) {
                         Toast.makeText(getContext(), "Cita actualizada", Toast.LENGTH_SHORT).show();
@@ -164,16 +163,13 @@ public class EditAppointmentFragment extends Fragment {
     }
 
     private void eliminarCita() {
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             boolean ok = controller.eliminarCita(idCita);
             if (ok) {
                 controller.registrarNotificacion("Cita Cancelada", "Se ha eliminado la cita de " + tvCliente.getText().toString());
             }
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (isAdded()) {
                     if (ok) {
                         Toast.makeText(getContext(), "Cita eliminada", Toast.LENGTH_SHORT).show();
@@ -184,5 +180,13 @@ public class EditAppointmentFragment extends Fragment {
                 }
             });
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
 }

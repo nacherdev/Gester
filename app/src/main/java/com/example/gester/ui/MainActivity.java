@@ -15,6 +15,9 @@ import com.example.gester.R;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final Handler splashHandler = new Handler(Looper.getMainLooper());
+    private Runnable splashRunnable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,20 +26,31 @@ public class MainActivity extends AppCompatActivity {
 
         hideSystemUI();
 
-        new Handler(Looper.getMainLooper()).postDelayed(
-                () -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-                    Intent intent = new Intent(MainActivity.this, AccesoActivity.class);
-                    startActivity(intent);
-                    finish();
-                }, 3000);
+        splashRunnable = () -> {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
+            Intent intent = new Intent(MainActivity.this, AccesoActivity.class);
+            startActivity(intent);
+            finish();
+        };
+
+        splashHandler.postDelayed(splashRunnable, 3000);
     }
 
     private void hideSystemUI() {
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        controller.hide(WindowInsetsCompat.Type.systemBars());
-        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        if (controller != null) {
+            controller.hide(WindowInsetsCompat.Type.systemBars());
+            controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (splashHandler != null && splashRunnable != null) {
+            splashHandler.removeCallbacks(splashRunnable);
+        }
     }
 }

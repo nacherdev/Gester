@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AddFragment extends Fragment {
@@ -51,6 +51,10 @@ public class AddFragment extends Fragment {
 
     private Controller controller;
     private String fechaFinalMsql = "";
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private Runnable busquedaRunnable;
 
     @Nullable
     @Override
@@ -93,9 +97,14 @@ public class AddFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String dniFiltrado = s.toString().trim();
+                if (busquedaRunnable != null) {
+                    mainHandler.removeCallbacks(busquedaRunnable);
+                }
+
+                String dniFiltrado = s.toString().trim().replace(" ", "");
                 if (dniFiltrado.length() >= 4) {
-                    buscarClientePorDni(dniFiltrado);
+                    busquedaRunnable = () -> buscarClientePorDni(dniFiltrado);
+                    mainHandler.postDelayed(busquedaRunnable, 150);
                 }
             }
 
@@ -107,13 +116,10 @@ public class AddFragment extends Fragment {
     }
 
     private void buscarClientePorDni(String dni) {
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             Usuario usuarioEncontrado = controller.obtenerUsuarioPorDni(dni);
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (!isAdded() || getContext() == null) {
                     return;
                 }
@@ -128,13 +134,10 @@ public class AddFragment extends Fragment {
     }
 
     private void cargarServicios() {
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             ArrayList<Servicio> servicios = controller.getServicios();
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (!isAdded() || getContext() == null) {
                     return;
                 }
@@ -159,8 +162,8 @@ public class AddFragment extends Fragment {
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(), (view, year, month, dayOfMonth) -> {
             int mesReal = month + 1;
-            String fechaVisual = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, mesReal, year);
-            etFechaNacimiento.setText(fechaVisual);
+            String fechaConGuiones = String.format(Locale.getDefault(), "%02d-%02d-%04d", dayOfMonth, mesReal, year);
+            etFechaNacimiento.setText(fechaConGuiones);
         }, anyo, mes, dia);
 
         datePickerDialog.show();
@@ -194,16 +197,13 @@ public class AddFragment extends Fragment {
             spinnerHoras.setAdapter(adapterCargando);
         }
 
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             ArrayList<String> ocupadas = controller.obtenerHorasOcupadasPorFecha(fecha);
             ArrayList<String> todasLasHoras = generarHorario();
 
             todasLasHoras.removeAll(ocupadas);
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (!isAdded() || getContext() == null) {
                     return;
                 }
@@ -221,10 +221,10 @@ public class AddFragment extends Fragment {
     }
 
     private void procesarGuardadoCita() {
-        String fomatoDni = "/^[XYZ\\d]\\d{7}[A-Z]$/i";
+        String formatoDni = "^[XYZ\\d]\\d{7}[A-Z]$";
         String nombre = etNombre.getText().toString().trim();
         String apellidos = etApellidos.getText().toString().trim();
-        String dni = etDni.getText().toString().trim();
+        String dni = etDni.getText().toString().trim().toUpperCase();
         String fechaNac = etFechaNacimiento.getText().toString().trim();
 
         if (nombre.isEmpty() || apellidos.isEmpty() || dni.isEmpty() || fechaNac.isEmpty() || fechaFinalMsql.isEmpty()) {
@@ -232,8 +232,8 @@ public class AddFragment extends Fragment {
             return;
         }
 
-        if (!dni.matches(fomatoDni)) {
-            Toast.makeText(getContext(), "Formato de dni, inválido, ponga uno válido", Toast.LENGTH_SHORT).show();
+        if (!dni.matches(formatoDni)) {
+            Toast.makeText(getContext(), "Formato de DNI/NIE inválido, por favor verifíquelo", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -258,33 +258,28 @@ public class AddFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         String fechaCreacion = sdf.format(new Date());
 
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             boolean exito = controller.crearCitaYUsuario(
                     nombre, apellidos, dni, fechaNac, idServicio, fechaFinalMsql, horaSeleccionada, fechaCreacion
             );
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (!isAdded() || getContext() == null) {
                     return;
                 }
                 if (exito) {
                     Toast.makeText(getContext(), "Cita registrada con éxito", Toast.LENGTH_SHORT).show();
                     String titulo = "Agendado con éxito";
-                    String mensaje = "Se ha creado la cita de "+nombre+" para el dia "+fechaFinalMsql +" a las "+horaSeleccionada;
+                    String mensaje = "Se ha creado la cita de " + nombre + " para el dia " + fechaFinalMsql + " a las " + horaSeleccionada;
                     NotificationCreator.enviar(getContext(), titulo, mensaje);
-                    executor.execute(() -> {
-                        controller.registrarNotificacion(titulo, mensaje);
-                    });
+
+                    executorService.execute(() -> controller.registrarNotificacion(titulo, mensaje));
                     limpiarFormulario();
                 } else {
                     Toast.makeText(getContext(), "Error: La cita ya existe o no se pudo registrar", Toast.LENGTH_SHORT).show();
                 }
             });
         });
-
     }
 
     private void limpiarFormulario() {
@@ -321,5 +316,21 @@ public class AddFragment extends Fragment {
         horario.add("19:30");
         horario.add("20:00");
         return horario;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (busquedaRunnable != null) {
+            mainHandler.removeCallbacks(busquedaRunnable);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
 }

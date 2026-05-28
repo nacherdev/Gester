@@ -20,7 +20,7 @@ import com.example.gester.dao.models.Cita;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HistoryFragment extends Fragment {
@@ -28,6 +28,9 @@ public class HistoryFragment extends Fragment {
     private LinearLayout containerHistorial;
     private Controller controller;
     private ArrayList<Cita> listaHistorial;
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Nullable
     @Override
@@ -56,13 +59,10 @@ public class HistoryFragment extends Fragment {
             containerHistorial.addView(tvCargando);
         }
 
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             ArrayList<Cita> todas = controller.getCitas();
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (!isAdded() || getContext() == null) {
                     return;
                 }
@@ -119,6 +119,14 @@ public class HistoryFragment extends Fragment {
             });
 
             containerHistorial.addView(cardItem);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
         }
     }
 }

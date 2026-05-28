@@ -22,7 +22,7 @@ import com.example.gester.controller.Controller;
 import com.example.gester.dao.models.Notificacion;
 
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class NotificationsFragment extends Fragment {
@@ -34,12 +34,13 @@ public class NotificationsFragment extends Fragment {
     private ArrayList<Notificacion> listaNotificaciones;
     private Button btn_eliminar_todo;
 
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_notifications, container, false);
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
 
         rvNotificaciones = root.findViewById(R.id.rvNotificaciones);
         tvEstadoCargando = root.findViewById(R.id.tvEstadoCargando);
@@ -53,12 +54,14 @@ public class NotificationsFragment extends Fragment {
         cargarBandejaNotificaciones();
 
         btn_eliminar_todo.setOnClickListener(v -> {
-            executor.execute(() -> {
+            executorService.execute(() -> {
                 boolean exito = controller.eliminarTodasLasNotificacion();
-                handler.post(() -> {
+                mainHandler.post(() -> {
+                    if (!isAdded()) return;
                     if (exito) {
-                        adapter.eliminarTodo();
-                        controller.eliminarTodasLasNotificacion();
+                        if (adapter != null) {
+                            adapter.eliminarTodo();
+                        }
                         Toast.makeText(getContext(), "Notificaciones borradas", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getContext(), "Error al borrar las notificaciones", Toast.LENGTH_SHORT).show();
@@ -75,14 +78,11 @@ public class NotificationsFragment extends Fragment {
             tvEstadoCargando.setVisibility(View.VISIBLE);
         }
 
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             controller.verificarCitasProximas();
             ArrayList<Notificacion> alertas = controller.obtenerNotificaciones();
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (!isAdded() || getContext() == null) {
                     return;
                 }
@@ -95,7 +95,6 @@ public class NotificationsFragment extends Fragment {
                     adapter = new NotificacionesAdapter(listaNotificaciones);
                     rvNotificaciones.setAdapter(adapter);
                 }
-
             });
         });
     }
@@ -110,17 +109,15 @@ public class NotificationsFragment extends Fragment {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int posicion = viewHolder.getBindingAdapterPosition();
-                Notificacion notificacionAEliminar = adapter.getLista().get(posicion);
+                if (adapter == null || posicion == RecyclerView.NO_POSITION) return;
 
+                Notificacion notificacionAEliminar = adapter.getLista().get(posicion);
                 adapter.eliminarItem(posicion);
 
-                Executor executor = Executors.newSingleThreadExecutor();
-                Handler handler = new Handler(Looper.getMainLooper());
-
-                executor.execute(() -> {
+                executorService.execute(() -> {
                     boolean eliminadoDb = controller.eliminarNotificacion(notificacionAEliminar.getId());
 
-                    handler.post(() -> {
+                    mainHandler.post(() -> {
                         if (!isAdded() || getContext() == null) {
                             return;
                         }
@@ -173,5 +170,13 @@ public class NotificationsFragment extends Fragment {
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(rvNotificaciones);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
 }

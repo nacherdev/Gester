@@ -19,7 +19,7 @@ import com.example.gester.dao.models.Cita;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HomeFragment extends Fragment {
@@ -28,6 +28,9 @@ public class HomeFragment extends Fragment {
     private LinearLayout containerProximasCitas;
     private Controller controller;
     private ArrayList<Cita> listaCitasHome;
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Nullable
     @Override
@@ -62,18 +65,22 @@ public class HomeFragment extends Fragment {
             containerProximasCitas.addView(tvCargando);
         }
 
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             ArrayList<Cita> proximas = controller.getCitasActivas();
 
-            handler.post(() -> {
-                if (isAdded() && proximas != null) {
+            mainHandler.post(() -> {
+                if (!isAdded()) {
+                    return;
+                }
+                if (proximas != null && !proximas.isEmpty()) {
                     listaCitasHome.clear();
                     listaCitasHome.addAll(proximas);
                     Collections.sort(listaCitasHome);
                     pintarTablaHome(listaCitasHome);
+                } else {
+                    if (containerProximasCitas != null) {
+                        containerProximasCitas.removeAllViews();
+                    }
                 }
             });
         });
@@ -118,6 +125,14 @@ public class HomeFragment extends Fragment {
 
                 containerProximasCitas.addView(cardCita);
             }
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
         }
     }
 }

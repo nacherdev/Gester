@@ -22,7 +22,7 @@ import com.example.gester.controller.Controller;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class CalendarFragment extends Fragment {
@@ -33,6 +33,9 @@ public class CalendarFragment extends Fragment {
 
     private Controller controller;
     private ArrayList<Cita> listaCitasDelDia;
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Nullable
     @Override
@@ -74,13 +77,10 @@ public class CalendarFragment extends Fragment {
             containerCitasCalendario.addView(tvCargando);
         }
 
-        Executor executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        executor.execute(() -> {
+        executorService.execute(() -> {
             ArrayList<Cita> citasFiltradas = controller.obtenerCitasPorFecha(fecha);
 
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (!isAdded() || getContext() == null) {
                     return;
                 }
@@ -150,5 +150,13 @@ public class CalendarFragment extends Fragment {
 
         tvTituloCitas.setText("Citas de hoy");
         buscarCitasPorFecha(hoy);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
 }

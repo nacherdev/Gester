@@ -5,12 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -31,6 +29,9 @@ import java.util.concurrent.Executors;
 public class AccesoActivity extends AppCompatActivity {
 
     private Button btnIniciarSesion, btnRegistrarse;
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -85,10 +86,11 @@ public class AccesoActivity extends AppCompatActivity {
         String dbUsuario = credenciales[1];
         String dbPassword = credenciales[2];
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
+        realizarConexionHilo(dbNombre, dbUsuario, dbPassword);
+    }
 
-        executor.execute(() -> {
+    private void realizarConexionHilo(String dbNombre, String dbUsuario, String dbPassword) {
+        executorService.execute(() -> {
             int conectado = 0;
             try {
                 Controller c = Controller.getInstancia();
@@ -98,19 +100,14 @@ public class AccesoActivity extends AppCompatActivity {
             }
 
             int finalConectado = conectado;
-            handler.post(() -> {
+            mainHandler.post(() -> {
                 if (isFinishing() || isDestroyed()) return;
-                if (finalConectado == 0) {
-
-                } else if (finalConectado == -1){
-                }
 
                 switch (finalConectado) {
                     case 0:
                         Intent intent = new Intent(AccesoActivity.this, HomeActivity.class);
                         intent.putExtra("nombre", dbNombre);
                         startActivity(intent);
-                        finish();
                         break;
                     case -1:
                         Toast.makeText(AccesoActivity.this, "Error: El servidor no responde", Toast.LENGTH_LONG).show();
@@ -124,14 +121,16 @@ public class AccesoActivity extends AppCompatActivity {
                             if (aceptado) {
                                 Toast.makeText(AccesoActivity.this, "Creando base de datos...", Toast.LENGTH_LONG).show();
 
-                                ExecutorService executorCrear = Executors.newSingleThreadExecutor();
-                                executorCrear.execute(() -> {
+                                executorService.execute(() -> {
                                     Controller controller = Controller.getInstancia();
                                     boolean exito = controller.crearBaseDeDatos(dbNombre, dbUsuario, dbPassword);
 
-                                    handler.post(() -> {
+                                    mainHandler.post(() -> {
+                                        if (isFinishing() || isDestroyed()) return;
                                         if (exito) {
-                                            Toast.makeText(AccesoActivity.this, "Se ha creado la base de datos con éxito", Toast.LENGTH_LONG).show();
+                                            Toast.makeText(AccesoActivity.this, "Base de datos creada. Accediendo...", Toast.LENGTH_SHORT).show();
+                                            realizarConexionHilo(dbNombre, dbUsuario, dbPassword);
+
                                         } else {
                                             Toast.makeText(AccesoActivity.this, "Ha habido un problema al crear la base de datos", Toast.LENGTH_LONG).show();
                                         }
@@ -143,7 +142,6 @@ public class AccesoActivity extends AppCompatActivity {
                         break;
                     case -4:
                         Toast.makeText(AccesoActivity.this, "Error: Contacta con administrador", Toast.LENGTH_LONG).show();
-
                         break;
                 }
             });
@@ -152,7 +150,17 @@ public class AccesoActivity extends AppCompatActivity {
 
     private void hideSystemUI() {
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        controller.hide(WindowInsetsCompat.Type.systemBars());
-        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        if (controller != null) {
+            controller.hide(WindowInsetsCompat.Type.systemBars());
+            controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
 }
