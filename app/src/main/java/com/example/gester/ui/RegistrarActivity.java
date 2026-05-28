@@ -35,7 +35,7 @@ public class RegistrarActivity extends AppCompatActivity {
 
         btnSubmit.setOnClickListener(v -> {
             String db = etDb.getText().toString().trim().replace(" ", "_").toLowerCase();
-            String user = "admin_"+db.toLowerCase();
+            String user = "admin_" + db.toLowerCase();
             String pass = etPass.getText().toString().trim();
 
             if (db.isEmpty() || pass.isEmpty()) {
@@ -59,7 +59,6 @@ public class RegistrarActivity extends AppCompatActivity {
              BufferedWriter writer = new BufferedWriter(osw)) {
 
             writer.write(contenido);
-            writer.close();
 
             Toast.makeText(this, "Credenciales registradas", Toast.LENGTH_SHORT).show();
             finish();
@@ -71,7 +70,9 @@ public class RegistrarActivity extends AppCompatActivity {
 
     private void hideSystemUI() {
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        controller.hide(WindowInsetsCompat.Type.systemBars());
-        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        if (controller != null) {
+            controller.hide(WindowInsetsCompat.Type.systemBars());
+            controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        }
     }
 }
