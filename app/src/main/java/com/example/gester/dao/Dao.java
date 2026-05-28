@@ -92,7 +92,7 @@ public class Dao {
 
     public static boolean crearBaseDeDatos(String dbName, String dbUser, String dbPass) {
         String url = "jdbc:mysql://nacherdev.es:3306/?connectTimeout=5000&socketTimeout=5000&useSSL=false&allowPublicKeyRetrieval=true";
-        try (Connection c = DriverManager.getConnection(url, "usuario_creador", "KeriPayosen67");
+        try (Connection c = DriverManager.getConnection(url, BuildConfig.DB_ADMIN_USER, BuildConfig.DB_ADMIN_PASS);
              Statement st = c.createStatement()) {
 
             st.execute("DROP DATABASE IF EXISTS " + dbName);
@@ -104,6 +104,7 @@ public class Dao {
             st.execute("GRANT ALL PRIVILEGES ON " + dbName + ".* TO '" + dbUser + "'@'%'");
             st.execute("FLUSH PRIVILEGES");
 
+            st.execute("USE `" + dbName + "`");
             String sqlUsuarios = "CREATE TABLE " + dbName + ".usuarios (\n" +
                     "\tid int PRIMARY KEY auto_increment,\n" +
                     "    nombre varchar(100) NOT NULL,\n" +
