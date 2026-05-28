@@ -82,7 +82,19 @@ public class AccesoActivity extends AppCompatActivity {
             return;
         }
 
-        realizarConexionHilo(credenciales[0], credenciales[1], credenciales[2]);
+        String db = credenciales[0];
+        String user = credenciales[1];
+        String pass = credenciales[2];
+
+        if (pass.length() < 8) {
+            Toast.makeText(this, "La contraseña no tiene un formato correcto", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(AccesoActivity.this, RegistrarActivity.class);
+            startActivity(intent);
+        } else {
+            realizarConexionHilo(db, user, pass);
+        }
+
+
     }
 
     private void realizarConexionHilo(String dbNombre, String dbUsuario, String dbPassword) {

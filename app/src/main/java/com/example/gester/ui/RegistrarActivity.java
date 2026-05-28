@@ -41,7 +41,12 @@ public class RegistrarActivity extends AppCompatActivity {
             if (db.isEmpty() || pass.isEmpty()) {
                 Toast.makeText(this, "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show();
             } else {
-                guardarCredenciales(db, user, pass);
+                if (pass.length() < 8) {
+                    Toast.makeText(this, "La contraseña tiene que tener minimo 8 caracteres", Toast.LENGTH_SHORT).show();
+                } else {
+                    guardarCredenciales(db, user, pass);
+
+                }
             }
         });
 
