@@ -6,4 +6,11 @@
     </style>
     <style name="CustomActiveIndicator" parent="" />
     <style name="Theme.Gester" parent="Base.Theme.Gester" />
+    <style name="RoundedDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
 </resources>
