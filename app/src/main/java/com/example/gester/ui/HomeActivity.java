@@ -8,14 +8,13 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 
-import com.example.gester.ui.Fragments.HomeFragment;
-import com.example.gester.ui.Fragments.AddFragment;
-import com.example.gester.ui.Fragments.HistoryFragment;
-import com.example.gester.ui.Fragments.NotificationsFragment;
-import com.example.gester.ui.Fragments.CalendarFragment;
-
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.gester.R;
+import com.example.gester.ui.Fragments.AddFragment;
+import com.example.gester.ui.Fragments.CalendarFragment;
+import com.example.gester.ui.Fragments.HistoryFragment;
+import com.example.gester.ui.Fragments.HomeFragment;
+import com.example.gester.ui.Fragments.NotificationsFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -64,8 +63,7 @@ public class HomeActivity extends AppCompatActivity {
                 homeFrag.setArguments(mochila);
                 selectedFragment = homeFrag;
             } else if (id == R.id.navigation_notifications) {
-                NotificationsFragment notificationFragment = new NotificationsFragment();
-                selectedFragment = notificationFragment;
+                selectedFragment = new NotificationsFragment();
             } else if (id == R.id.navigation_add) {
                 selectedFragment = new AddFragment();
             } else if (id == R.id.navigation_calendar) {
@@ -86,7 +84,9 @@ public class HomeActivity extends AppCompatActivity {
 
     private void hideSystemUI() {
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        controller.hide(WindowInsetsCompat.Type.systemBars());
-        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        if (controller != null) {
+            controller.hide(WindowInsetsCompat.Type.systemBars());
+            controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        }
     }
 }

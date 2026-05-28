@@ -4,15 +4,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.gester.R;
 import com.example.gester.dao.models.Notificacion;
+
 import java.util.ArrayList;
 
 public class NotificacionesAdapter extends RecyclerView.Adapter<NotificacionesAdapter.ViewHolder> {
 
-    private ArrayList<Notificacion> lista;
+    private final ArrayList<Notificacion> lista;
 
     public NotificacionesAdapter(ArrayList<Notificacion> lista) {
         this.lista = lista;
@@ -43,8 +46,10 @@ public class NotificacionesAdapter extends RecyclerView.Adapter<NotificacionesAd
     }
 
     public void eliminarItem(int posicion) {
-        lista.remove(posicion);
-        notifyItemRemoved(posicion);
+        if (posicion >= 0 && posicion < lista.size()) {
+            lista.remove(posicion);
+            notifyItemRemoved(posicion);
+        }
     }
 
     public void eliminarTodo() {
