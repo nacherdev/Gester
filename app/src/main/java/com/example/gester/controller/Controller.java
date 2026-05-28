@@ -1,15 +1,11 @@
 package com.example.gester.controller;
 
-import android.widget.ArrayAdapter;
-
 import com.example.gester.dao.Dao;
 import com.example.gester.dao.models.Cita;
 import com.example.gester.dao.models.Notificacion;
 import com.example.gester.dao.models.Servicio;
 import com.example.gester.dao.models.Usuario;
 
-import java.sql.Connection;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +33,7 @@ public class Controller {
     }
 
     public boolean crearBaseDeDatos(String dbName, String dbUser, String dbPass) {
-        return  Dao.crearBaseDeDatos(dbName, dbUser, dbPass);
+        return Dao.crearBaseDeDatos(dbName, dbUser, dbPass);
     }
 
     public ArrayList<Cita> getCitas(){
@@ -49,12 +45,13 @@ public class Controller {
         if (d == null) return new ArrayList<>();
         return d.getCitasActivas();
     }
+
     public ArrayList<Servicio> getServicios(){
         if (d == null) return new ArrayList<>();
         return d.todosLosServicios();
     }
 
-    public ArrayList<Usuario> getUsusarios(){
+    public ArrayList<Usuario> getUsuarios(){
         if (d == null) return new ArrayList<>();
         return d.todosLosUsuarios();
     }
@@ -65,10 +62,9 @@ public class Controller {
         if (d == null) return false;
 
         try {
-            DNI = DNI.trim();
-            DNI = DNI.toUpperCase();
+            DNI = DNI.trim().toUpperCase();
             int idUsuario = d.buscarIdUsuarioPorDni(DNI);
-            System.out.println(idUsuario);
+
             if (idUsuario == -1) {
                 boolean usuarioCreado = d.crearUsuario(nombre, apellidos, DNI, fechaNacimiento);
 
@@ -87,9 +83,7 @@ public class Controller {
                 return false;
             }
 
-            boolean citaCreada = d.crearCita(idUsuario, idServicio, fechaCita, horaCita, fechaCreacion);
-
-            return citaCreada;
+            return d.crearCita(idUsuario, idServicio, fechaCita, horaCita, fechaCreacion);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -99,7 +93,6 @@ public class Controller {
 
     public ArrayList<Cita> obtenerCitasPorFecha(String fecha) {
         if (d == null) {
-            System.out.println("Controller: Error, la instancia del DAO es nula.");
             return new ArrayList<>();
         }
 
@@ -117,7 +110,6 @@ public class Controller {
             return listaCitas;
 
         } catch (Exception e) {
-            System.out.println("Controller: Error imprevisto al obtener las citas por fecha.");
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -129,7 +121,6 @@ public class Controller {
     }
 
     public boolean registrarNotificacion(String titulo, String mensaje) {
-
         if (d == null) return false;
         return d.registrarNotificacion(titulo, mensaje);
     }

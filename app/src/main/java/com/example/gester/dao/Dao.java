@@ -20,9 +20,7 @@ public class Dao {
     private String dbUser;
     private String dbPass;
 
-    public Dao() {
-
-    }
+    public Dao() { }
 
     public Dao(String dbName, String dbUser, String dbPass) {
         this.dbName = dbName.trim();
@@ -40,11 +38,7 @@ public class Dao {
     public Connection conectar() throws SQLException {
         String url = "jdbc:mysql://nacherdev.es:3306/" + dbName
                 + "?connectTimeout=5000&socketTimeout=5000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true";
-        try {
-            return DriverManager.getConnection(url, dbUser, dbPass);
-        } catch (SQLException e) {
-            throw e;
-        }
+        return DriverManager.getConnection(url, dbUser, dbPass);
     }
 
     public int existeBaseDeDatos(String name) {
@@ -67,7 +61,6 @@ public class Dao {
 
         } catch (SQLException e) {
             String sqlState = e.getSQLState();
-
             if (sqlState != null && sqlState.startsWith("08")) {
                 return -2;
             } else {
@@ -79,19 +72,14 @@ public class Dao {
     public int probarConexion() {
         int res = existeBaseDeDatos(this.dbName);
 
-        if (res == -2) {
-            return -2;
-        }
-
-        if (res == -3) {
-            return -3;
+        if (res == -2 || res == -3) {
+            return res;
         }
 
         try (Connection c = conectar()) {
             return 0;
         } catch (SQLException e) {
             String sqlState = e.getSQLState();
-            System.out.println(sqlState);
             if (sqlState != null && sqlState.startsWith("28")) {
                 return -1;
             } else if (sqlState != null && sqlState.startsWith("08")) {
@@ -120,7 +108,7 @@ public class Dao {
                     "\tid int PRIMARY KEY auto_increment,\n" +
                     "    nombre varchar(100) NOT NULL,\n" +
                     "    apellidos varchar(255) NOT NULL,\n" +
-                    "    DNI varchar(9) NOT NULL,\n" +
+                    "    DNI varchar(9) NOT NULL UNIQUE,\n" +
                     "    fecha_nacimiento varchar(100) NOT NULL\n" +
                     ");";
             st.execute(sqlUsuarios);
@@ -160,6 +148,7 @@ public class Dao {
             return false;
         }
     }
+
     public ArrayList<Cita> todasLasCitas() {
         ArrayList<Cita> listaCitas = new ArrayList<>();
         String sql = "SELECT c.*, " +
@@ -520,7 +509,7 @@ public class Dao {
     public boolean eliminarTodasLasNotificacion() {
         String sql = "TRUNCATE TABLE notificaciones";
         try (Connection con = conectar();
-            PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
+             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
             if (ps != null) {
                 ps.executeUpdate();
                 return true;
@@ -530,7 +519,6 @@ public class Dao {
             e.printStackTrace();
             return false;
         }
-
     }
 
     public void verificarCitasProximas() {
@@ -638,7 +626,7 @@ public class Dao {
         if (dni != null) {
             dni = dni.trim().toUpperCase();
         }
-        String sql = "SELECT id, nombre, apellidos, DNI, fecha_nacimiento FROM usuarios WHERE DNI = ?";
+        String sql = "SELECT * FROM usuarios WHERE DNI = ?";
 
         try (Connection con = conectar();
              PreparedStatement ps = con != null ? con.prepareStatement(sql) : null) {
