@@ -54,39 +54,35 @@ public class AccesoActivity extends AppCompatActivity {
     }
 
     private void intentarConexion() {
+        File archivoInterno = new File(getFilesDir(), "BBDD.txt");
+
+        if (!archivoInterno.exists()) {
+            Toast.makeText(this, "No hay credenciales registradas. Registralos!.", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(AccesoActivity.this, RegistrarActivity.class);
+            startActivity(intent);
+            return;
+        }
+
         String[] credenciales = null;
-        try {
-            File archivoInterno = new File(getFilesDir(), "BBDD.txt");
-            InputStream is;
-
-            if (archivoInterno.exists()) {
-                is = new FileInputStream(archivoInterno);
-            } else {
-                is = getAssets().open("BBDD.txt");
-            }
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        try (FileInputStream fis = new FileInputStream(archivoInterno);
+             BufferedReader br = new BufferedReader(new InputStreamReader(fis))) {
             String linea = br.readLine();
             if (linea != null && !linea.trim().isEmpty()) {
                 credenciales = linea.trim().split(";");
             }
-            br.close();
-            is.close();
         } catch (IOException e) {
-            Toast.makeText(this, "Error leyendo configuración", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error leyendo archivo de configuración", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (credenciales == null || credenciales.length < 3) {
-            Toast.makeText(this, "No hay credenciales registradas", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Credenciales inválidas. Redirigiendo...", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(AccesoActivity.this, RegistrarActivity.class);
+            startActivity(intent);
             return;
         }
 
-        String dbNombre = credenciales[0];
-        String dbUsuario = credenciales[1];
-        String dbPassword = credenciales[2];
-
-        realizarConexionHilo(dbNombre, dbUsuario, dbPassword);
+        realizarConexionHilo(credenciales[0], credenciales[1], credenciales[2]);
     }
 
     private void realizarConexionHilo(String dbNombre, String dbUsuario, String dbPassword) {
