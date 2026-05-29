@@ -14,7 +14,7 @@
         android:layout_margin="1dp"
         app:cardCornerRadius="14dp"
         app:cardElevation="2dp"
-        app:cardBackgroundColor="#FFFFFF">
+        app:cardBackgroundColor="@color/notif_item_card_bg">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -27,7 +27,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
-                android:textColor="#111827"
+                android:textColor="@color/notif_item_titulo"
                 android:textSize="16sp"
                 android:fontFamily="sans-serif-medium"
                 app:layout_constraintEnd_toStartOf="@+id/tvItemFecha"
@@ -38,7 +38,7 @@
                 android:id="@+id/tvItemFecha"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#9CA3AF"
+                android:textColor="@color/notif_item_fecha"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif"
                 app:layout_constraintBottom_toBottomOf="@+id/tvItemTitulo"
@@ -50,7 +50,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="#4B5563"
+                android:textColor="@color/notif_item_mensaje"
                 android:textSize="14sp"
                 android:fontFamily="sans-serif"
                 android:lineSpacingMultiplier="1.15"

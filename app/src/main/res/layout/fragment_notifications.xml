@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F3F6FA"
+    android:background="?android:attr/windowBackground"
     android:padding="24dp"
     tools:context=".ui.Fragments.NotificationsFragment">
 
@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Bandeja de Entrada"
-        android:textColor="#111827"
+        android:textColor="@color/notif_titulo"
         android:textSize="26sp"
         android:fontFamily="sans-serif-black" />
 
@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Desliza cualquier notificación a la izquierda para borrarla"
-        android:textColor="#6B7280"
+        android:textColor="@color/notif_subtitulo"
         android:textSize="14sp"
         android:fontFamily="sans-serif-medium"
         android:layout_marginTop="4dp"
@@ -45,7 +45,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Buscando..."
-            android:textColor="#6B7280"
+            android:textColor="@color/notif_subtitulo"
             android:textSize="15sp"
             android:fontFamily="sans-serif-medium"
             android:visibility="gone" />

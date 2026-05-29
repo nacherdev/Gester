@@ -6,7 +6,7 @@
     android:id="@+id/main_acceso"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="?android:attr/windowBackground" >
 
     <ImageView
         android:id="@+id/topView"
@@ -35,7 +35,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.141" />
 
-
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
@@ -49,13 +48,12 @@
         app:layout_constraintTop_toBottomOf="@id/topView"
         app:layout_constraintVertical_bias="0.0">
 
-
         <Button
             android:id="@+id/btn_login"
             android:layout_width="match_parent"
             android:layout_height="55dp"
             android:layout_marginTop="30dp"
-            android:backgroundTint="#007BFF"
+            android:backgroundTint="?attr/colorPrimary"
             android:text="Acceder"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
@@ -67,7 +65,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:text="o"
-            android:textColor="#000000" />
+            android:textColor="?android:attr/textColorSecondary" />
 
         <Button
             android:id="@+id/btn_signup"
@@ -77,9 +75,9 @@
             android:layout_marginTop="20dp"
             android:text="Registrar Credenciales"
             android:textAllCaps="false"
-            android:textColor="#000000"
+            android:textColor="?android:attr/textColorPrimary"
             app:cornerRadius="12dp"
-            app:strokeColor="#BBBBBB" />
+            app:strokeColor="?android:attr/textColorSecondary" />
 
     </LinearLayout>
 

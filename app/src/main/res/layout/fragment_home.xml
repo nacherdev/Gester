@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F3F6FA">
+    android:background="?android:attr/windowBackground" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="24sp"
                 android:fontFamily="sans-serif-black"
-                android:textColor="#111827"
+                android:textColor="@color/home_bienvenida"
                 android:text="¡Bienvenido!" />
 
             <TextView
@@ -35,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
                 android:fontFamily="sans-serif-medium"
-                android:textColor="#6B7280"
+                android:textColor="@color/home_subtitulo"
                 android:layout_marginTop="4dp"
                 android:text="Gestiona tus citas de hoy" />
         </LinearLayout>
@@ -45,7 +46,7 @@
             android:layout_height="48dp"
             app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="#D1E3F8">
+            app:cardBackgroundColor="@color/home_bg_avatar">
 
             <ImageView
                 android:layout_width="match_parent"
@@ -67,7 +68,7 @@
             android:layout_height="wrap_content"
             android:textSize="13sp"
             android:fontFamily="sans-serif-medium"
-            android:textColor="#4B5563"
+            android:textColor="@color/home_etiqueta_seccion"
             android:layout_marginHorizontal="16dp"
             android:layout_marginBottom="12dp"
             android:letterSpacing="0.05"

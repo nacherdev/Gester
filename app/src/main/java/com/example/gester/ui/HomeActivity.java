@@ -32,6 +32,11 @@ public class HomeActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
         String nombre = getIntent().getStringExtra("nombre");
 
+        bottomNavigation.setOnApplyWindowInsetsListener((view, insets) -> {
+            view.setPadding(0, 0, 0, 0);
+            return insets;
+        });
+
         if (savedInstanceState == null) {
             Bundle mochila = new Bundle();
             mochila.putString("nombre", nombre);

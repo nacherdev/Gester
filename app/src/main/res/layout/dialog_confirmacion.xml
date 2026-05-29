@@ -7,7 +7,7 @@
     android:layout_margin="16dp"
     app:cardCornerRadius="24dp"
     app:cardElevation="8dp"
-    app:cardBackgroundColor="@android:color/white">
+    app:cardBackgroundColor="?attr/colorContainer" >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
             android:layout_height="64dp"
             android:layout_marginTop="8dp"
             android:src="@android:drawable/ic_dialog_alert"
-            app:tint="#3B82F6"
+            app:tint="?attr/colorPrimary"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="¡Base de datos no encontrada!"
-            android:textColor="#111111"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintTop_toBottomOf="@id/ivIconoAlerta"
@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="La base de datos que ha indicado no existe, quiere crearla?"
-            android:textColor="#555555"
+            android:textColor="?android:attr/textColorSecondary"
             android:textSize="14sp"
             android:gravity="center"
             android:lineSpacingMultiplier="1.2"
@@ -67,9 +67,9 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                android:textColor="#111111"
+                android:textColor="?android:attr/textColorPrimary"
                 android:text="Cancelar"
-                android:backgroundTint="@android:color/white" />
+                android:backgroundTint="?android:attr/windowBackground" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnSi"
@@ -79,7 +79,7 @@
                 android:layout_marginStart="8dp"
                 android:text="Confirmar"
                 android:textColor="@android:color/white"
-                android:backgroundTint="#007BFF" />
+                android:backgroundTint="?attr/colorPrimary" />
 
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

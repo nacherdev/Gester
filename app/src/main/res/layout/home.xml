@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_home"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/default_background">
+    android:background="?android:attr/windowBackground">
 
     <FrameLayout
         android:id="@+id/fragment_container"
@@ -16,12 +17,20 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:background="#FFFFFF"
+        android:layout_height="80dp"
+        android:background="@color/bg_bottom_nav"
+
+        android:paddingBottom="0dp"
+        android:paddingTop="0dp"
+        android:layout_marginBottom="0dp"
+
         app:itemIconTint="@color/nav_item_selector"
-        app:itemTextColor="@color/nav_item_color"
+        app:itemTextColor="@color/nav_item_selector"
         app:itemIconSize="24dp"
-        app:labelVisibilityMode="unlabeled"
+        app:labelVisibilityMode="labeled"
+
+        android:elevation="12dp"
+
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

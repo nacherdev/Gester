@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F3F6FA"
+    android:background="?android:attr/windowBackground"
     android:padding="24dp">
 
     <TextView
@@ -12,15 +12,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Historial de Registros"
-        android:textColor="#111827"
+        android:textColor="@color/historial_titulo"
         android:textSize="26sp"
         android:fontFamily="sans-serif-black" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Consulta el historialde todas las citas"
-        android:textColor="#6B7280"
+        android:text="Consulta el historial de todas las citas"
+        android:textColor="@color/historial_subtitulo"
         android:textSize="14sp"
         android:fontFamily="sans-serif-medium"
         android:layout_marginTop="4dp"
