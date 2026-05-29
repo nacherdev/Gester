@@ -47,4 +47,8 @@
     <color name="notif_item_mensaje">#C7C7C7</color>
     <color name="reg_cred_btn_submit">#80CBC4</color>
     <color name="spinner_item_text">#E3E3E3</color>
+    <color name="dialog_bg">#1E1E1E</color>
+    <color name="dialog_azul_confirmar">#80CBC4</color>
+    <color name="dialog_btn_cancelar_bg">#2A2A2A</color>
+    <color name="dialog_btn_cancelar_text">#E3E3E3</color>
 </resources>

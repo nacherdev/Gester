@@ -11,7 +11,7 @@
         android:id="@+id/tvTituloHistorial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Historial de Registros"
+        android:text="Historial de Citas"
         android:textColor="@color/historial_titulo"
         android:textSize="26sp"
         android:fontFamily="sans-serif-black" />
